@@ -1,0 +1,1830 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ACC Dashboard</title>
+</head>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+  :root {
+    --primary-color: #2563eb;
+    --primary-hover: #1d4ed8;
+    --bg-color: #f8fafc;
+    --surface-color: #ffffff;
+    --text-main: #1e293b;
+    --text-muted: #64748b;
+    --border-color: #e2e8f0;
+
+    --status-pending-bg: #ecfdf5;
+    --status-pending-text: #059669;
+    --status-completed-bg: #f0fdf4;
+    --status-completed-text: #166534;
+    --status-inprogress-bg: #eff6ff;
+    --status-inprogress-text: #1d4ed8;
+
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+
+    --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-weight: 700;
+    color: var(--text-main);
+  }
+
+  a {
+    text-decoration: none;
+    color: inherit;
+    transition: var(--transition);
+  }
+
+  button {
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    background: none;
+    transition: var(--transition);
+  }
+
+  .app-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 32px;
+    background-color: var(--surface-color);
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .nav-left {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 800;
+    font-size: 18px;
+    color: var(--primary-color);
+  }
+
+  .brand-icon {
+    width: 32px;
+    height: 32px;
+    background-color: var(--primary-color);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+  }
+
+  .search-bar {
+    display: flex;
+    align-items: center;
+    background-color: #f1f5f9;
+    border-radius: var(--radius-md);
+    padding: 8px 16px;
+    width: 280px;
+    gap: 10px;
+    color: var(--text-muted);
+    border: 1px solid transparent;
+    transition: var(--transition);
+  }
+
+  .search-bar:focus-within {
+    background-color: white;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  }
+
+  .search-bar input {
+    border: none;
+    background: transparent;
+    width: 100%;
+    font-size: 14px;
+    outline: none;
+    color: var(--text-main);
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+
+  .nav-links a.active {
+    color: var(--primary-color);
+    position: relative;
+  }
+
+  .nav-links a.active::after {
+    content: '';
+    position: absolute;
+    bottom: -20px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: var(--primary-color);
+    border-radius: 3px 3px 0 0;
+  }
+
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid white;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .main-content {
+    flex: 1;
+    padding: 40px 32px;
+    max-width: 1440px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .page-header {
+    margin-bottom: 32px;
+  }
+
+  .subtitle {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  h1 {
+    font-size: 32px;
+    margin: 4px 0 16px 0;
+    letter-spacing: -0.03em;
+  }
+
+  .table-section {
+    background: white;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+
+  .table-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .acc-pattern-header {
+    align-items: flex-start;
+  }
+
+  .acc-subtitle-text {
+    color: var(--text-muted);
+    font-size: 14px;
+    margin-top: 4px;
+    margin-bottom: 0;
+  }
+
+  .acc-export-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-main);
+    border-color: #e5e7eb;
+    font-weight: 600;
+  }
+
+  .acc-export-btn:hover {
+    background-color: rgba(140, 234, 187, 0.1);
+  }
+
+  .acc-footer-count {
+    font-size: 13.5px;
+    color: #64748b;
+    font-weight: 500;
+  }
+
+  .assign-btn {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.1);
+  }
+
+  .assign-btn:hover {
+    background-color: var(--primary-hover);
+  }
+
+  .acc-gallery-id-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    font-weight: 600;
+    color: var(--primary-color);
+    cursor: pointer;
+    text-align: left;
+    text-decoration: none;
+  }
+
+  .acc-gallery-id-btn:hover {
+    text-decoration: underline;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  th {
+    background: #f8fafc;
+    padding: 14px 20px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  td {
+    padding: 16px 20px;
+    font-size: 14px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-main);
+  }
+
+  tbody tr:hover {
+    background-color: #f1f5f9;
+  }
+
+  .btn-primary {
+    background: var(--primary-color);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    border: none;
+    transition: var(--transition);
+  }
+
+  .btn-primary:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+  }
+
+  .btn-outline {
+    background: white;
+    color: var(--text-main);
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    border: 1px solid var(--border-color);
+    transition: var(--transition);
+  }
+
+  .btn-outline:hover {
+    background: #f8fafc;
+    border-color: var(--text-muted);
+  }
+
+  .badge {
+    display: inline-flex;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 11.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .status-pending {
+    background: #ecfdf5;
+    color: #059669;
+    border: 1px solid #d1fae5;
+  }
+
+  .status-completed {
+    background: #ecfdf5;
+    color: #059669;
+    border: 1px solid #d1fae5;
+  }
+
+  .modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .card {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    box-shadow: var(--shadow-lg);
+    width: 100%;
+    max-width: 500px;
+  }
+
+  .dropzone {
+    border: 2px dashed var(--border-color);
+    border-radius: 12px;
+    padding: 40px;
+    text-align: center;
+    background: #f8fafc;
+    transition: var(--transition);
+    cursor: pointer;
+  }
+
+  .dropzone:hover {
+    border-color: var(--primary-color);
+    background: #eff6ff;
+  }
+
+  .request-banner {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 12px;
+    padding: 20px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+
+  /* Awaiting / Processed Acc: same table-like gallery as Pattern */
+  .pattern-gallery-grid {
+    flex-direction: column;
+    width: 100%;
+    margin-top: 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background: #fff;
+    overflow-x: auto;
+  }
+
+  /* Beats any stray rules hiding the grid; toggled in JS after load */
+  .pattern-gallery-grid.pattern-gallery-grid--open {
+    display: flex !important;
+  }
+
+  .pattern-gallery-row {
+    display: grid;
+    grid-template-columns:
+      minmax(88px, 1fr) minmax(100px, 1.35fr) minmax(90px, 1fr) minmax(120px, 1.2fr) minmax(88px, 0.95fr) minmax(104px, 1fr) minmax(148px, auto);
+    gap: 12px 16px;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid #f9fafb;
+    font-size: 14px;
+  }
+
+  .pattern-gallery-row:last-child {
+    border-bottom: none;
+  }
+
+  .pattern-gallery-row--head {
+    background: #fafafa;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+  }
+
+  .pattern-gallery-row:not(.pattern-gallery-row--head):hover {
+    background: #f8fafc;
+  }
+
+  .pattern-gallery-cell {
+    min-width: 0;
+  }
+
+  .pattern-gallery-cell--id {
+    color: var(--primary-color);
+    font-weight: 600;
+  }
+
+  .pattern-gallery-cell--mute {
+    color: var(--text-muted);
+  }
+
+  .pattern-gallery-cell--truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .pattern-gallery-cell--pl {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    color: var(--text-main);
+  }
+
+  .pattern-gallery-row__avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .pattern-gallery-row__actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .pattern-gallery-row__actions .btn-outline,
+  .pattern-gallery-row__actions .btn-primary {
+    padding: 6px 14px;
+    font-size: 12px;
+  }
+
+  .pattern-gallery-row__actions .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .pattern-gallery-row__actions .assign-btn {
+    margin: 0 auto;
+  }
+
+  .pattern-gallery-row--head .pattern-gallery-row__actions {
+    text-align: center;
+  }
+
+  .pattern-gallery-empty {
+    padding: 48px 20px;
+    text-align: center;
+    color: #64748b;
+  }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  .success-badge {
+    background-color: #ecfdf5;
+    color: #059669;
+  }
+
+  .pending-badge {
+    background-color: #ecfdf5;
+    color: #059669;
+  }
+
+  .inprogress-badge {
+    background-color: #eff6ff;
+    color: #2563eb;
+  }
+
+  .danger-badge {
+    background-color: #fef2f2;
+    color: #dc2626;
+  }
+</style>
+
+<body>
+  <div class="app-container">
+    <nav class="navbar">
+      <div class="nav-left">
+        <div class="brand">
+          <div class="brand-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+              stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+              <line x1="12" y1="8" x2="12" y2="16" />
+              <line x1="8" y1="12" x2="16" y2="12" />
+            </svg>
+          </div>
+          ACC Production
+        </div>
+        <div class="search-bar">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input type="text" id="search-input" placeholder="Search Style or C_Number..." />
+        </div>
+        <div class="nav-links">
+          <a href="../vanilla/index.html" style="opacity: 0.6; font-size: 12px; margin-right: 15px;">Main Hub</a>
+          <a href="#" class="active" id="nav-uploads">Pending</a>
+          <a href="#" id="nav-completed">Completed</a>
+          <a href="#" id="nav-calendar">Calendar</a>
+        </div>
+      </div>
+      <div class="nav-right">
+        <button class="icon-btn" style="margin-right: 12px; color: #64748b;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+        </button>
+        <img class="avatar" src="https://i.pravatar.cc/150?u=acc_user" alt="User" />
+      </div>
+    </nav>
+
+    <main class="main-content">
+      <header class="page-header">
+        <div class="page-title">
+          <span class="subtitle">Production Accessories</span>
+          <h1 id="main-title">Accessories Queue</h1>
+          <div style="display: flex; gap: 12px; margin-top: 12px;">
+            <div
+              style="display: flex; align-items: center; gap: 8px; background: #ecfdf5; color: #059669; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; border: 1px solid #d1fae5;">
+              <div style="width: 8px; height: 8px; background: #10b981; border-radius: 50%;"></div>
+              Awaiting: <span id="stat-upload-count" style="font-weight: 900; margin-left: 4px;">0</span>
+            </div>
+            <div
+              style="display: flex; align-items: center; gap: 8px; background: #f0fdf4; color: #166534; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; border: 1px solid #dcfce7;">
+              <div style="width: 8px; height: 8px; background: #16a34a; border-radius: 50%;"></div>
+              Complete: <span id="stat-complete-count" style="font-weight: 900; margin-left: 4px;">0</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Upload Popup (Techpack-like) -->
+      <div class="modal" id="upload-modal">
+        <div class="card" id="upload-config-section" style="display: none; margin-bottom: 0; max-width: 1020px;">
+          <div class="card-header"
+            style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
+            <div class="card-title" style="font-size: 18px; margin: 0;">Upload ACC <span id="config-req-id"
+                class="req-id"></span></div>
+            <button class="btn-outline" id="close-upload-modal-btn" style="padding: 6px 10px;">×</button>
+          </div>
+
+          <div
+            style="margin-bottom: 20px; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px; background: #f8fafc;">
+            <div style="font-size: 13px; font-weight: 700; margin-bottom: 10px; color: #334155;">Detail</div>
+            <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px;">
+              <div>
+                <div style="font-size:10px; color:#64748b; font-weight:800; text-transform:uppercase;">Request ID</div>
+                <div id="acc-detail-id" style="font-size:13px; font-weight:600;">-</div>
+              </div>
+              <div>
+                <div style="font-size:10px; color:#64748b; font-weight:800; text-transform:uppercase;">Title</div>
+                <div id="acc-detail-title" style="font-size:13px; font-weight:600;">-</div>
+              </div>
+              <div>
+                <div style="font-size:10px; color:#64748b; font-weight:800; text-transform:uppercase;">Customer</div>
+                <div id="acc-detail-customer" style="font-size:13px; font-weight:600;">-</div>
+              </div>
+              <div>
+                <div style="font-size:10px; color:#64748b; font-weight:800; text-transform:uppercase;">PL Name</div>
+                <div id="acc-detail-pl" style="font-size:13px; font-weight:600;">-</div>
+              </div>
+              <div>
+                <div style="font-size:10px; color:#64748b; font-weight:800; text-transform:uppercase;">Status</div>
+                <div id="acc-detail-status" style="font-size:13px; font-weight:600;">-</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="dropzone" id="browse-files-btn" style="max-width: 800px; margin: 0 auto 20px auto;">
+            <div class="dropzone-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path>
+                <path d="M12 11v6"></path>
+                <path d="m9 14 3-3 3 3"></path>
+              </svg>
+            </div>
+            <h4 id="config-pl-name" style="color: var(--primary-color); margin-bottom: 8px;">Assigned PL</h4>
+            <p style="font-weight: 600; font-size: 15px; color: var(--text-main); margin-bottom: 4px;">Please upload ACC
+            </p>
+            <p style="margin-bottom: 12px;">Click here to open production folder and upload finalized ACC file.</p>
+            <button class="btn-outline">Browse Files</button>
+          </div>
+
+          <div
+            style="max-width: 800px; margin: 0 auto; padding: 10px 12px; border: 1px solid #bfdbfe; border-radius: 8px; background: #ffffff;">
+            <div style="font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 4px;">Folder Path</div>
+            <a id="upload-folder-link" href="#" target="_blank" rel="noopener noreferrer"
+              style="font-size: 13px; color: #2563eb; text-decoration: underline; word-break: break-all;">Open
+              folder</a>
+          </div>
+          <div
+            style="display: flex; gap: 10px; align-items: end; margin: 16px auto 0 auto; flex-wrap: wrap; max-width: 800px;">
+            <div style="min-width: 240px;">
+              <label for="upload-status-select"
+                style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">Status</label>
+              <select id="upload-status-select" class="btn-outline"
+                style="width: 100%; text-align: left; padding: 10px;"></select>
+            </div>
+            <button class="btn-outline" id="save-acc-status-btn"
+              style="padding: 10px 18px; border-color: #93c5fd; color: #1d4ed8; background: #eff6ff;">Save</button>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; margin: 24px auto 0 auto; max-width: 800px;">
+            <button class="btn-primary" id="submit-acc-btn" style="padding: 12px 32px; font-size: 14px;">Confirm Acc
+              Uploaded</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Data Table -->
+      <div class="table-section">
+        <div class="table-header acc-pattern-header">
+          <div>
+            <h2 id="table-title">Accessories Queue</h2>
+            <p class="acc-subtitle-text" id="acc-subtitle-text">Managing current accessories production queue</p>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button class="btn-ghost" id="open-filter"
+              style="display: inline-flex; align-items: center; gap: 6px; font-weight: 600; color: #64748b;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+              </svg>
+              Filter Data
+            </button>
+            <button class="btn-outline acc-export-btn" id="export-excel-btn" type="button">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              Export
+            </button>
+          </div>
+        </div>
+        <!-- Gallery (row layout, same structure as Pattern / other apps) -->
+        <div id="gallery-container" class="pattern-gallery-grid" style="display: none;">
+          <!-- Rendered via JS -->
+        </div>
+
+        <!-- Table View (Used for Awaiting Acc) -->
+        <div id="table-container" style="width: 100%;">
+          <table>
+            <thead>
+              <tr>
+                <th>C_Number</th>
+                <th>Style</th>
+                <th>Customer</th>
+                <th>Assigned PL</th>
+                <th>Costing Ready Date</th>
+                <th>Status</th>
+                <th id="th-leadtime">PL Overdue</th>
+                <th style="text-align: center;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="table-body">
+              <!-- Dynamic data -->
+            </tbody>
+          </table>
+        </div>
+        <!-- Pagination/Total Footer - Matching Photo -->
+        <div
+          style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding: 0 4px;">
+          <div id="pagination-info" class="acc-footer-count">Showing 0 items</div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn-outline"
+              style="padding: 6px 16px; font-size: 13px; color: #94a3b8; border-color: #e2e8f0; cursor: not-allowed;">Previous</button>
+            <button class="btn-outline" style="padding: 6px 16px; font-size: 13px; border-color: #e2e8f0;">Next</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Calendar View (Hidden) -->
+      <div id="calendar-section"
+        style="display: none; background: white; padding: 24px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+          <button class="btn-outline" id="cal-prev-btn">Previous</button>
+          <h2 id="cal-month-title">Month Year</h2>
+          <button class="btn-outline" id="cal-next-btn">Next</button>
+        </div>
+        <div id="calendar-grid"
+          style="display: grid; grid-template-columns: repeat(7, 1fr); grid-auto-rows: 110px; gap: 8px;"></div>
+      </div>
+    </main>
+
+    <!-- Modals -->
+    <div class="modal" id="details-modal">
+      <div class="card" style="max-width: 550px;">
+        <h3
+          style="margin-bottom: 20px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; color: var(--primary-color);">
+          Request Analytics</h3>
+        <div id="details-content" style="margin-bottom: 24px;"></div>
+        <div style="display: flex; justify-content: flex-end;">
+          <button class="btn-outline" id="close-details-btn">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal" id="filter-modal">
+      <div class="card" style="max-width: 400px;">
+        <h3 style="margin-bottom: 20px;">Advanced Filter</h3>
+        <div style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px;">
+          <div>
+            <label
+              style="display: block; font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 6px;">C_Number</label>
+            <input type="text" id="filter-id" list="id-list" class="btn-outline"
+              style="width: 100%; text-align: left; padding: 10px;" placeholder="Search or select C_Number..." />
+            <datalist id="id-list"></datalist>
+          </div>
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 6px;">STYLE
+              NAME</label>
+            <input type="text" id="filter-style" list="style-list" class="btn-outline"
+              style="width: 100%; text-align: left; padding: 10px;" placeholder="Search or select Style..." />
+            <datalist id="style-list"></datalist>
+          </div>
+          <div>
+            <label
+              style="display: block; font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 6px;">CUSTOMER</label>
+            <input type="text" id="filter-cust" list="cust-list" class="btn-outline"
+              style="width: 100%; text-align: left; padding: 10px;" placeholder="Search or select Customer..." />
+            <datalist id="cust-list"></datalist>
+          </div>
+          <div>
+            <label style="display: block; font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 6px;">PL
+              NAME</label>
+            <input type="text" id="filter-pl" list="pl-list" class="btn-outline"
+              style="width: 100%; text-align: left; padding: 10px;" placeholder="Search or select PL..." />
+            <datalist id="pl-list"></datalist>
+          </div>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 12px;">
+          <button class="btn-outline" id="close-filter-btn">Cancel</button>
+          <button class="btn-primary" id="apply-filter-btn">Apply Filters</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzSdyx3uNKZPhbhwg_eIc_VmRTvUNF8-Q5z9hunbr7seSuz2nNdO-awDI8qserEQHkr/exec';
+      const GOOGLE_SCRIPT_URL = localStorage.getItem('ACC_SCRIPT_URL') || DEFAULT_SCRIPT_URL;
+      const ACC_SHEET_QUERY = (localStorage.getItem('ACC_SHEET_NAME') || 'Acc').trim() || 'Acc';
+      let requestsRows = [];
+      let currentTab = 'Uploads';
+      let searchText = '';
+
+      // Advanced Filters
+      let advFilter = { id: '', style: '', customer: '', pl: '' };
+
+      const tableBody = document.getElementById('table-body');
+      const activeRequestBanner = document.getElementById('active-request-banner');
+      const uploadConfigSection = document.getElementById('upload-config-section');
+      const uploadModal = document.getElementById('upload-modal');
+
+      const normalizeStatus = (s) => String(s || '').toUpperCase().replace(/\s+/g, ' ').trim();
+
+      /** Apps Script JSON uses `status`; raw sheet keys may use `Status`. */
+      function getRowStatus(row) {
+        if (!row) return '';
+        return String(row.status ?? row.Status ?? '').trim();
+      }
+
+      /** Normalizes header text to compare with sheet columns (e.g. "C Number", "C-Number" → "c_number"). */
+      function normalizeSheetHeaderKey(h) {
+        return String(h || '')
+          .trim()
+          .toLowerCase()
+          .replace(/[\s-]+/g, '_')
+          .replace(/_+/g, '_');
+      }
+
+      /** Strips spaces/underscores/dashes so C_Number, CNumber, c-number all match. */
+      function compactKeyName(key) {
+        return String(key || '')
+          .replace(/[\s_\-]/g, '')
+          .toLowerCase();
+      }
+
+      /** True if the sheet/API column name is the C number field (handles C_Number, CNumber, C_NUM, etc.). */
+      function isCNumberColumnKey(key) {
+        const c = compactKeyName(key);
+        if (c === 'cnumber' || c === 'cnum' || c === 'cno') return true;
+        const n = normalizeSheetHeaderKey(key);
+        return (
+          n === 'c_number' ||
+          n === 'cnumber' ||
+          n === 'c_num' ||
+          n === 'c_no' ||
+          n === 'cnum'
+        );
+      }
+
+      /** First non-empty cell from any column that looks like C_Number in the sheet row object. */
+      function scanObjectForCNumberCell(obj) {
+        if (!obj || typeof obj !== 'object') return undefined;
+        for (const key of Object.keys(obj)) {
+          if (!isCNumberColumnKey(key)) continue;
+          const val = obj[key];
+          if (val !== undefined && val !== null && String(val).trim() !== '') return val;
+        }
+        return undefined;
+      }
+
+      /**
+       * Matches column by compact name (CNumber / C_Number / C Number / c-number → "cnumber").
+       * Catches JSON keys that differ only by punctuation from your Sheet header.
+       */
+      function valueByCompactColumnName(obj, compactTarget) {
+        if (!obj || typeof obj !== 'object') return undefined;
+        const t = String(compactTarget).replace(/[\s_\-]/g, '').toLowerCase();
+        for (const key of Object.keys(obj)) {
+          if (compactKeyName(key) !== t) continue;
+          const val = obj[key];
+          if (val !== undefined && val !== null && String(val).trim() !== '') return val;
+        }
+        return undefined;
+      }
+
+      /** Backend sometimes sends id: "REQ-1" — that is not the Sheet C_Number; ignore for display. */
+      function isPlaceholderRequestId(val) {
+        return /^REQ-\d+$/i.test(String(val == null ? '' : val).trim());
+      }
+
+      /** Same characters you see in the Sheet cell (no switching to a different field like generic id). */
+      function sheetCellToDisplayString(v) {
+        if (v === undefined || v === null) return '';
+        if (typeof v === 'number') {
+          if (Number.isInteger(v)) return String(v);
+          return String(v);
+        }
+        return String(v).trim();
+      }
+
+      /** Values like C202600001 from your Sheet column G (C + digits). */
+      function looksLikeSheetCNumber(s) {
+        const t = String(s || '').trim();
+        return /^C\d{4,}$/i.test(t);
+      }
+
+      /**
+       * When Apps Script omits C_Number keys, find any cell value that looks like C202600001 in raw/row.
+       */
+      function inferCNumberFromRow(row) {
+        if (!row) return '';
+        const bags = [row.raw, row].filter(o => o && typeof o === 'object' && !Array.isArray(o));
+        const skip = new Set(['customer', 'assignee', 'status', 'folderlink', 'remarks', 'avatar', 'statusclass', 'style']);
+        for (const obj of bags) {
+          for (const key of Object.keys(obj)) {
+            if (skip.has(compactKeyName(key))) continue;
+            const s = sheetCellToDisplayString(obj[key]);
+            if (looksLikeSheetCNumber(s)) return s;
+          }
+        }
+        return '';
+      }
+
+      function getCNumber(row) {
+        if (!row) return '';
+        const raw = row.raw && typeof row.raw === 'object' ? row.raw : null;
+
+        const tryVal = (v) => {
+          const s = sheetCellToDisplayString(v);
+          if (!s || isPlaceholderRequestId(s)) return '';
+          return s;
+        };
+
+        // Priority 1: API uses c_number + id; sheet-style keys use C_Number
+        let s = tryVal(row.c_number || row.C_Number || row.C_NUMBER || row.id || row.ID);
+        if (s && !isPlaceholderRequestId(s)) return s;
+
+        // Priority 2: Use mapping by compact/normalized name on raw object
+        const aliases = ['cnumber', 'c_number', 'cnum', 'c_num', 'cno', 'c_no'];
+        for (const a of aliases) {
+          const val = valueByCompactColumnName(raw, a) || valueByCompactColumnName(row, a);
+          if (val && !isPlaceholderRequestId(val)) return sheetCellToDisplayString(val);
+        }
+
+        // Priority 3: Fallback to scanning for inferred numbers if none are found
+        return inferCNumberFromRow(row) || '';
+      }
+
+      /** Sheet column B "ID" (numeric/list id) — when C_Number is blank in the sheet */
+      function getSheetListId(row) {
+        if (!row) return '';
+        const raw = row.raw && typeof row.raw === 'object' ? row.raw : null;
+
+        // Most Apps Scripts map Column B to a specific field. We check common ones.
+        const fromNamed =
+          valueByCompactColumnName(raw, 'ID') ??
+          valueByCompactColumnName(row, 'ID') ??
+          row.ID ??
+          row.Id;
+
+        if (fromNamed !== undefined && fromNamed !== null && String(fromNamed).trim() !== '') return String(fromNamed).trim();
+        return '';
+      }
+
+      /**
+       * C_Number column: real C_Number → then inferred C2026… → then sheet ID column → em dash
+       */
+      function formatCNumberDisplay(row) {
+        const cn = getCNumber(row);
+        if (cn) return cn;
+        const sid = getSheetListId(row);
+        if (sid) return sid;
+        return '—';
+      }
+
+      /** Stable key for buttons: C_Number, else sheet ID, else row index */
+      function getRowActionKey(row, index) {
+        const c = getCNumber(row);
+        if (c) return c;
+        const sid = getSheetListId(row);
+        if (sid) return sid;
+        return `__idx_${index}`;
+      }
+
+      function findRowByCNumber(id) {
+        const want = String(id || '').trim().toLowerCase();
+        if (!want) return undefined;
+        return requestsRows.find(r => getCNumber(r).toLowerCase() === want);
+      }
+
+      function findRowForAction(key) {
+        const k = String(key || '');
+        if (k.startsWith('__idx_')) {
+          const i = parseInt(k.slice(6), 10);
+          if (!Number.isNaN(i) && requestsRows[i] !== undefined) return requestsRows[i];
+          return undefined;
+        }
+        const want = k.trim().toLowerCase();
+        const byC = findRowByCNumber(k);
+        if (byC) return byC;
+        return requestsRows.find(r => getSheetListId(r).toLowerCase() === want);
+      }
+
+      function getAvailableAccStatuses() {
+        const fromData = [...new Set(
+          requestsRows
+            .map(r => getRowStatus(r))
+            .filter(Boolean)
+        )];
+        const defaults = ['AWAITING ACC', 'COMPLETE ACC'];
+        const all = [...new Set([...fromData, ...defaults])];
+        return all.sort((a, b) => a.localeCompare(b));
+      }
+
+      function setupUploadStatusControls(rowData, actionKey) {
+        const statusSelect = document.getElementById('upload-status-select');
+        const saveBtn = document.getElementById('save-acc-status-btn');
+        const folderLink = document.getElementById('upload-folder-link');
+        if (!statusSelect || !saveBtn || !folderLink) return;
+
+        const statuses = getAvailableAccStatuses();
+        statusSelect.innerHTML = statuses
+          .map(s => `<option value="${String(s).replace(/"/g, '&quot;')}">${s}</option>`)
+          .join('');
+        const currentStatus = getRowStatus(rowData);
+        if (currentStatus) statusSelect.value = currentStatus;
+        if (!statusSelect.value && statuses.length) statusSelect.value = statuses[0];
+
+        const link = rowData.folderLink || rowData.folder_path || rowData.folder_link || '';
+        if (link && String(link).startsWith('http')) {
+          folderLink.href = link;
+          folderLink.textContent = link;
+          folderLink.style.pointerEvents = 'auto';
+          folderLink.style.opacity = '1';
+        } else {
+          folderLink.href = '#';
+          folderLink.textContent = 'No folder link available';
+          folderLink.style.pointerEvents = 'none';
+          folderLink.style.opacity = '0.7';
+        }
+
+        saveBtn.dataset.id = actionKey;
+      }
+
+      function fillUploadDetailPanel(rowData, requestId) {
+        const set = (id, v) => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = String(v || '-');
+        };
+        set('acc-detail-id', requestId || formatCNumberDisplay(rowData));
+        set('acc-detail-title', rowData.style || rowData.title || '-');
+        set('acc-detail-customer', rowData.customer || '-');
+        set('acc-detail-pl', rowData.assignee || 'Unassigned');
+        set('acc-detail-status', getRowStatus(rowData) || '-');
+      }
+
+      /** Value sent to Apps Script for COMPLETE ACC (prefer C_Number from sheet column G) */
+      function getRequestIdForPost(row) {
+        return getCNumber(row) || getSheetListId(row) || '';
+      }
+
+      function formatGalleryDue(row) {
+        const raw = row.raw && typeof row.raw === 'object' ? row.raw : null;
+        const v =
+          row.due ||
+          row.Costing_Ready_Date ||
+          (raw && (raw.Costing_Ready_Date || raw['Costing Ready Date'] || raw.Costing_ready_date)) ||
+          '';
+        const s = String(v || '').trim();
+        return s || '-';
+      }
+
+      function accGalleryStatusBadgeClass(row) {
+        const s = normalizeStatus(getRowStatus(row));
+        if (s.includes('COMPLETE')) return 'success-badge';
+        if (s.includes('AWAITING')) return 'pending-badge';
+        return 'inprogress-badge';
+      }
+
+      function updateAccHeaderSubtitle() {
+        const sub = document.getElementById('acc-subtitle-text');
+        const title = document.getElementById('table-title');
+        if (!title) return;
+        if (currentTab === 'Completed') {
+          title.textContent = 'Processed Accessories';
+          if (sub) sub.textContent = 'Completed accessories production records';
+        } else if (currentTab === 'Calendar') {
+          title.textContent = 'Calendar';
+          if (sub) sub.textContent = 'Plan and track accessories milestones';
+        } else {
+          title.textContent = 'Accessories Queue';
+          if (sub) sub.textContent = 'Managing current accessories production queue';
+        }
+      }
+
+      function showGalleryLoadError(message) {
+        requestsRows = [];
+        const gallery = document.getElementById('gallery-container');
+        if (gallery) {
+          gallery.classList.add('pattern-gallery-grid--open');
+          gallery.style.display = 'flex';
+          gallery.innerHTML = `<div class="pattern-gallery-empty" style="text-align:left;max-width:640px;margin:0 auto;padding:16px;">
+        <strong style="color:#b91c1c;">Could not load Acc data</strong>
+        <p style="margin:10px 0 0;color:#475569;font-size:14px;">${String(message || '').replace(/</g, '&lt;')}</p>
+        <p style="margin:12px 0 0;font-size:12px;color:#64748b;">If the sheet tab is not exactly <code>Acc</code>, set in console: <code>localStorage.setItem('ACC_SHEET_NAME','YourTabName')</code> then reload. Or deploy the latest Apps Script and use <code>localStorage.setItem('ACC_SCRIPT_URL','…/exec')</code> if the URL changed.</p>
+      </div>`;
+        }
+        const paginationInfo = document.getElementById('pagination-info');
+        if (paginationInfo) paginationInfo.textContent = 'Showing 0 items';
+        populateDatalists();
+        updateStats();
+        updateAccHeaderSubtitle();
+      }
+
+      function parseJsonSafe(text) {
+        const t = String(text || '').replace(/^\uFEFF/, '').trim();
+        return JSON.parse(t);
+      }
+
+      function showFileProtocolBanner() {
+        if (location.protocol !== 'file:') return;
+        const host = document.querySelector('.page-header') || document.querySelector('.table-section') || document.body;
+        let el = document.getElementById('acc-file-protocol-banner');
+        if (!el && host) {
+          el = document.createElement('div');
+          el.id = 'acc-file-protocol-banner';
+          el.setAttribute('role', 'status');
+          el.style.cssText = 'margin:12px 0;padding:12px 14px;background:#fff7ed;border:1px solid #fdba74;border-radius:8px;font-size:13px;color:#9a3412;max-width:900px;';
+          el.innerHTML =
+            '<strong>Opened as a local file (file://)</strong> — some browsers block loading data from Google. ' +
+            'Serve this folder over HTTP (e.g. VS Code <em>Live Server</em>, or <code>npx serve</code>) and open the page as <code>http://localhost:…</code>, then refresh.';
+          host.insertBefore(el, host.firstChild);
+        }
+      }
+
+      async function loadData() {
+        showFileProtocolBanner();
+        tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 60px; color: #64748b;">⏳ Fetching production data from Acc sheet...</td></tr>';
+        const sheetParam = encodeURIComponent(ACC_SHEET_QUERY);
+        const urlsToTry = [
+          `${GOOGLE_SCRIPT_URL}?sheet=${sheetParam}&t=${Date.now()}`,
+          `${GOOGLE_SCRIPT_URL}?sheet=Acc&t=${Date.now()}`,
+          `${GOOGLE_SCRIPT_URL}?sheet=ACC&t=${Date.now()}`
+        ];
+        const uniqueUrls = [...new Set(urlsToTry)];
+
+        try {
+          let lastErr = '';
+          let data = null;
+          let lastUrl = '';
+          let lastHttpStatus = 0;
+
+          for (const url of uniqueUrls) {
+            console.log('🔄 Attempting fetch from:', url);
+            lastUrl = url;
+            const response = await fetch(url, {
+              method: 'GET',
+              mode: 'cors',
+              cache: 'no-store',
+              credentials: 'omit'
+            });
+            lastHttpStatus = response.status;
+            const text = await response.text();
+            console.log('📄 Raw response start:', text.slice(0, 100));
+            let parsed;
+            try {
+              parsed = parseJsonSafe(text);
+              console.log('✅ JSON parsed successfully, elements:', Array.isArray(parsed) ? parsed.length : (parsed && parsed.data ? parsed.data.length : 'Object'));
+            } catch (e) {
+              lastErr =
+                'Could not parse JSON (HTTP ' +
+                response.status +
+                '). Deploy the web app with access Anyone (anonymous) and open the Test URL in a new tab. Parse error: ' +
+                (e && e.message ? e.message : String(e)) +
+                '. Raw start: ' +
+                text.slice(0, 180).replace(/</g, '&lt;');
+              continue;
+            }
+
+            if (parsed && parsed.error) {
+              lastErr = String(parsed.error);
+              continue;
+            }
+
+            if (Array.isArray(parsed)) {
+              data = parsed;
+              break;
+            }
+            if (parsed && typeof parsed === 'object') {
+              const rows = Array.isArray(parsed.rows)
+                ? parsed.rows
+                : Array.isArray(parsed.data)
+                  ? parsed.data
+                  : Array.isArray(parsed.records)
+                    ? parsed.records
+                    : null;
+              if (rows && rows.length) {
+                data = rows;
+                break;
+              }
+              if (rows && rows.length === 0 && !parsed.error) {
+                data = [];
+                break;
+              }
+            }
+            lastErr = 'Unexpected response shape from Apps Script.';
+          }
+
+          if (typeof window !== 'undefined') {
+            window.__ACC_LAST_FETCH__ = {
+              url: lastUrl,
+              httpStatus: lastHttpStatus,
+              rowCount: Array.isArray(data) ? data.length : null,
+              error: lastErr || null
+            };
+          }
+
+          if (data === null) {
+            const testUrl = uniqueUrls[0] || GOOGLE_SCRIPT_URL + '?sheet=Acc';
+            showGalleryLoadError(
+              (lastErr || 'No usable JSON array in response.') +
+              ' — Open this link in your browser to verify the API: ' +
+              testUrl
+            );
+            return;
+          }
+
+          if (data.length === 0) {
+            requestsRows = [];
+            const testUrl = uniqueUrls[0] || GOOGLE_SCRIPT_URL + '?sheet=Acc';
+            const gallery = document.getElementById('gallery-container');
+            if (gallery) {
+              gallery.classList.add('pattern-gallery-grid--open');
+              gallery.style.display = 'flex';
+              gallery.innerHTML = `<div class="pattern-gallery-empty" style="text-align:left;max-width:720px;padding:16px;">
+            <strong>Connected, but 0 rows returned</strong>
+            <p style="margin:10px 0;color:#475569;font-size:14px;">The Apps Script answered with an empty list <code>[]</code>. Often the web app is tied to a <em>different</em> spreadsheet than the one where your Acc tab has data, or row 1 is not the only header row.</p>
+            <p style="margin:0 0 8px;font-size:13px;"><a href="${testUrl.replace(/"/g, '&quot;')}" target="_blank" rel="noopener noreferrer" style="color:#2563eb;">Open this URL in a new tab</a> — you should see a JSON array. If it is <code>[]</code>, fix the script deployment (must use the spreadsheet that contains the Acc sheet) or add data from row 2 downward under a single header row.</p>
+            <p style="margin:0;font-size:12px;color:#64748b;">Script URL in use: <code style="word-break:break-all;">${String(GOOGLE_SCRIPT_URL).replace(/</g, '&lt;')}</code></p>
+          </div>`;
+            }
+            populateDatalists();
+            updateStats();
+            updateAccHeaderSubtitle();
+            const paginationInfo = document.getElementById('pagination-info');
+            if (paginationInfo) paginationInfo.textContent = 'Showing 0 items';
+            return;
+          }
+
+          requestsRows = data;
+          if (typeof window !== 'undefined') {
+            window.__ACC_DEBUG_FIRST_ROW__ = requestsRows[0] || null;
+            window.__ACC_DEBUG_ROW_KEYS__ = requestsRows[0] ? Object.keys(requestsRows[0]) : [];
+          }
+          populateDatalists();
+          renderAll();
+        } catch (err) {
+          console.error(err);
+          showGalleryLoadError(err.message || String(err));
+        }
+      }
+
+      function populateDatalists() {
+        const ids = [
+          ...new Set(
+            requestsRows.flatMap(r => [getCNumber(r), getSheetListId(r)].filter(Boolean))
+          )
+        ];
+        const styles = [...new Set(requestsRows.map(r => r.style).filter(Boolean))];
+        const customers = [...new Set(requestsRows.map(r => r.customer).filter(Boolean))];
+        const pls = [...new Set(requestsRows.map(r => r.assignee).filter(Boolean))];
+
+        const fills = [
+          { id: 'id-list', vals: ids },
+          { id: 'style-list', vals: styles },
+          { id: 'cust-list', vals: customers },
+          { id: 'pl-list', vals: pls }
+        ];
+
+        fills.forEach(f => {
+          const el = document.getElementById(f.id);
+          if (el) {
+            el.innerHTML = f.vals.map(v => `<option value="${v}">`).join('');
+          }
+        });
+      }
+
+      function renderAll() {
+        updateStats();
+        updateAccHeaderSubtitle();
+        const tableContainer = document.getElementById('table-container');
+        const galleryContainer = document.getElementById('gallery-container');
+        const tableSection = document.querySelector('.table-section');
+        const calendarSection = document.getElementById('calendar-section');
+
+        if (currentTab === 'Calendar') {
+          if (tableSection) tableSection.style.display = 'none';
+          if (calendarSection) calendarSection.style.display = 'block';
+          if (galleryContainer) {
+            galleryContainer.classList.remove('pattern-gallery-grid--open');
+            galleryContainer.style.display = 'none';
+          }
+          renderCalendar();
+        } else {
+          if (tableSection) tableSection.style.display = 'block';
+          if (calendarSection) calendarSection.style.display = 'none';
+          if (tableContainer) tableContainer.style.display = 'none';
+          if (galleryContainer) {
+            galleryContainer.classList.add('pattern-gallery-grid--open');
+            galleryContainer.style.display = 'flex';
+          }
+          renderGallery();
+        }
+      }
+
+      function renderGallery() {
+        const gallery = document.getElementById('gallery-container');
+        if (!gallery) return;
+        gallery.innerHTML = '';
+
+        const filtered = requestsRows.filter(row => {
+          // Pending tab: show every row from the Acc sheet (search/filters only).
+          // Completed tab: only COMPLETE ACC rows.
+          if (currentTab === 'Completed') {
+            if (normalizeStatus(getRowStatus(row)) !== 'COMPLETE ACC') return false;
+          }
+
+          if (searchText) {
+            const query = searchText.toLowerCase();
+            const idHay = `${getCNumber(row) || ''} ${getSheetListId(row) || ''}`.toLowerCase();
+            const matchesMain =
+              idHay.includes(query) ||
+              (row.style || row.Style || '').toLowerCase().includes(query);
+            if (!matchesMain) return false;
+          }
+
+          if (advFilter.id) {
+            const q = advFilter.id.toLowerCase();
+            const idHay = `${getCNumber(row) || ''} ${getSheetListId(row) || ''}`.toLowerCase();
+            if (!idHay.includes(q)) return false;
+          }
+          if (advFilter.style && !(row.style || row.Style || '').toLowerCase().includes(advFilter.style.toLowerCase())) return false;
+          if (advFilter.customer && !(row.customer || row.Customer || '').toLowerCase().includes(advFilter.customer.toLowerCase())) return false;
+          if (advFilter.pl && !(row.assignee || row.PL_Name || '').toLowerCase().includes(advFilter.pl.toLowerCase())) return false;
+
+          return true;
+        });
+
+        // Update pagination info
+        const paginationInfo = document.getElementById('pagination-info');
+        if (paginationInfo) {
+          const n = filtered.length;
+          paginationInfo.textContent = `Showing ${n} ${n === 1 ? 'item' : 'items'}`;
+        }
+
+        if (filtered.length === 0) {
+          const total = requestsRows.length;
+          let emptyMsg;
+          if (total === 0) {
+            emptyMsg =
+              currentTab === 'Completed'
+                ? 'No processed items found.'
+                : 'No requests loaded from the Acc sheet. Confirm the web app URL and that the Acc tab has a header row and data from row 2 onward.';
+          } else if (currentTab === 'Completed') {
+            emptyMsg = `Loaded ${total} row(s) from the sheet, but none have status "COMPLETE ACC". Open the Pending tab to see awaiting items, or update Status in the sheet.`;
+          } else if (searchText || advFilter.id || advFilter.style || advFilter.customer || advFilter.pl) {
+            emptyMsg = `Loaded ${total} row(s), but none match the current search or filters. Clear the search box and open Filter Data → reset filters.`;
+          } else {
+            emptyMsg = 'No rows to display (unexpected). Check the browser console for errors.';
+          }
+          gallery.innerHTML = `<div class="pattern-gallery-empty">${emptyMsg}</div>`;
+          return;
+        }
+
+        const head = document.createElement('div');
+        head.className = 'pattern-gallery-row pattern-gallery-row--head';
+        head.innerHTML = `
+      <span>C_Number</span>
+      <span>Style</span>
+      <span>Customer</span>
+      <span>Assigned PL</span>
+      <span>Costing ready</span>
+      <span>Status</span>
+      <span class="pattern-gallery-row__actions">Action</span>
+    `;
+        gallery.appendChild(head);
+
+        filtered.forEach((row) => {
+          const globalIdx = requestsRows.indexOf(row);
+          const actionKey = getRowActionKey(row, globalIdx >= 0 ? globalIdx : 0);
+          const cNumLabel = formatCNumberDisplay(row);
+          const line = document.createElement('div');
+          line.className = 'pattern-gallery-row';
+
+          const styleDisp = row.style || row.Style || '-';
+          const customerDisp = row.customer || row.Customer || '-';
+          const plDisp = row.assignee || row.PL_Name || 'Unassigned';
+          const av = row.avatar || 'https://i.pravatar.cc/150?u=' + encodeURIComponent(actionKey);
+          const dueDisp = formatGalleryDue(row);
+          const statusDisp = getRowStatus(row) || (currentTab === 'Completed' ? 'COMPLETE ACC' : '—');
+          const statusBadgeClass = accGalleryStatusBadgeClass(row);
+          const rowComplete = normalizeStatus(getRowStatus(row)) === 'COMPLETE ACC';
+
+          const completedActions = `<div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; align-items: center;">
+             <button type="button" class="btn-outline details-btn" data-id="${actionKey}" style="padding: 6px 10px; font-size: 12px;">Details</button>
+             <button type="button" class="btn-outline remarks-btn" data-id="${actionKey}" style="padding: 6px 10px; font-size: 12px;">Remarks</button>
+           </div>`;
+
+          const actionButtons =
+            currentTab === 'Uploads'
+              ? (rowComplete
+                ? completedActions
+                : `<button type="button" class="assign-btn upload-acc-btn" data-id="${actionKey}">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Upload
+           </button>`)
+              : completedActions;
+
+          line.innerHTML = `
+        <span class="pattern-gallery-cell">
+          <button type="button" class="acc-gallery-id-btn" data-action-key="${actionKey}">${cNumLabel}</button>
+        </span>
+        <span class="pattern-gallery-cell pattern-gallery-cell--truncate" style="font-weight: 500;">${styleDisp}</span>
+        <span class="pattern-gallery-cell pattern-gallery-cell--mute pattern-gallery-cell--truncate">${customerDisp}</span>
+        <span class="pattern-gallery-cell pattern-gallery-cell--pl">
+          <img class="pattern-gallery-row__avatar" src="${av}" alt="" />
+          <span class="pattern-gallery-cell--truncate">${plDisp}</span>
+        </span>
+        <span class="pattern-gallery-cell">${dueDisp}</span>
+        <span class="pattern-gallery-cell"><span class="status-badge ${statusBadgeClass}">${statusDisp}</span></span>
+        <span class="pattern-gallery-row__actions">${actionButtons}</span>
+      `;
+
+          gallery.appendChild(line);
+        });
+
+        gallery.querySelectorAll('.acc-gallery-id-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const key = e.currentTarget.getAttribute('data-action-key');
+            const rowData = findRowForAction(key);
+            if (rowData) showDetails(rowData);
+          });
+        });
+
+        gallery.querySelectorAll('.upload-acc-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const id = e.currentTarget.getAttribute('data-id');
+            const rowData = findRowForAction(id);
+            if (rowData) {
+              const reqId = getRequestIdForPost(rowData);
+              document.getElementById('active-req-id').textContent = reqId;
+              const reqPill = document.getElementById('config-req-id');
+              if (reqPill) reqPill.textContent = reqId ? `#${reqId}` : '';
+              document.getElementById('active-req-style').textContent = `${rowData.style || '-'} | ${rowData.customer || '-'}`;
+              document.getElementById('config-pl-name').textContent = `PL: ${rowData.assignee || 'Unassigned'}`;
+              document.getElementById('browse-files-btn').dataset.link = rowData.folderLink || rowData.folder_path || rowData.folder_link || '';
+              setupUploadStatusControls(rowData, id);
+              activeRequestBanner.style.display = 'none';
+              uploadConfigSection.style.display = 'block';
+              fillUploadDetailPanel(rowData, reqId);
+              if (uploadModal) uploadModal.style.display = 'flex';
+            }
+          });
+        });
+
+        gallery.querySelectorAll('.details-btn').forEach(btn => btn.addEventListener('click', (e) => {
+          const rowData = findRowForAction(e.currentTarget.dataset.id);
+          if (rowData) showDetails(rowData);
+        }));
+        gallery.querySelectorAll('.remarks-btn').forEach(btn =>
+          btn.addEventListener('click', (e) => openRemarks(e.currentTarget.dataset.id))
+        );
+      }
+
+      function updateStats() {
+        const awaitingCount = requestsRows.filter(r => normalizeStatus(getRowStatus(r)) === 'AWAITING ACC').length;
+        const completeCount = requestsRows.filter(r => normalizeStatus(getRowStatus(r)) === 'COMPLETE ACC').length;
+        document.getElementById('stat-upload-count').textContent = awaitingCount;
+        document.getElementById('stat-complete-count').textContent = completeCount;
+      }
+
+      function renderTable() {
+        tableBody.innerHTML = '';
+        const tableTitle = document.getElementById('table-title');
+        tableTitle.textContent = currentTab === 'Uploads' ? 'Accessories Queue' : 'Processed Accessories';
+
+        let filtered = requestsRows.filter(row => {
+          const s = normalizeStatus(getRowStatus(row));
+          if (currentTab === 'Uploads' && s !== 'AWAITING ACC') return false;
+          if (currentTab === 'Completed' && s !== 'COMPLETE ACC') return false;
+
+          // Search Box (Quick search)
+          if (searchText) {
+            const query = searchText.toLowerCase();
+            const idHay = `${getCNumber(row) || ''} ${getSheetListId(row) || ''}`.toLowerCase();
+            const matchesMain = idHay.includes(query) || (row.style || '').toLowerCase().includes(query);
+            if (!matchesMain) return false;
+          }
+
+          // Advanced Modal Filters
+          if (advFilter.id) {
+            const q = advFilter.id.toLowerCase();
+            const idHay = `${getCNumber(row) || ''} ${getSheetListId(row) || ''}`.toLowerCase();
+            if (!idHay.includes(q)) return false;
+          }
+          if (advFilter.style && !(row.style || '').toLowerCase().includes(advFilter.style.toLowerCase())) return false;
+          if (advFilter.customer && !(row.customer || '').toLowerCase().includes(advFilter.customer.toLowerCase())) return false;
+          if (advFilter.pl && !(row.assignee || '').toLowerCase().includes(advFilter.pl.toLowerCase())) return false;
+
+          return true;
+        });
+
+        // Update pagination info
+        const paginationInfo = document.getElementById('pagination-info');
+        if (paginationInfo) {
+          const n = filtered.length;
+          paginationInfo.textContent = `Showing ${n} ${n === 1 ? 'item' : 'items'}`;
+        }
+
+        if (filtered.length === 0) {
+          tableBody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 40px; color: #64748b;">No ${currentTab.toLowerCase()} items found.</td></tr>`;
+          return;
+        }
+
+        filtered.forEach((row) => {
+          const globalIdx = requestsRows.indexOf(row);
+          const actionKey = getRowActionKey(row, globalIdx >= 0 ? globalIdx : 0);
+          const cNumLabel = formatCNumberDisplay(row);
+          const tr = document.createElement('tr');
+
+          // PL Overdue Logic (Matching Techpack)
+          let plOverdueCol = '-';
+          const createdDtStr = row.createdDate || row.Created || '-';
+          if (createdDtStr !== '-') {
+            const created = new Date(createdDtStr);
+            if (!isNaN(created)) {
+              const today = new Date();
+              const diffHours = Math.floor((today - created) / (1000 * 60 * 60));
+              if (diffHours > 24) {
+                plOverdueCol = `<span style="background-color: #fee2e2; color: #dc2626; padding: 4px 10px; border-radius: 12px; font-weight: 700; font-size: 12px; display: inline-block; border: 1px solid #f87171; box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);">${diffHours} hr</span>`;
+              } else {
+                plOverdueCol = diffHours + ' hr';
+              }
+            }
+          }
+
+          const actionBtn = currentTab === 'Uploads'
+            ? `<div style="display: flex; justify-content: center; align-items: center; width: 100%;">
+            <button class="btn-primary upload-acc-btn" data-id="${actionKey}" style="display: inline-flex; padding: 6px 14px; font-size: 12px; margin-top: 4px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              Upload
+            </button>
+           </div>`
+            : `<div style="display: flex; justify-content: center;"><button class="btn-outline details-btn" data-id="${actionKey}" style="padding: 6px 14px; font-size: 12px;">Details</button></div>`;
+
+          const statusBadge = `<span class="badge" style="background: #f0fdf4; color: #16a34a; padding: 6px 14px; border-radius: 20px; font-weight: 700; font-size: 11.5px; border: 1px solid #bbf7d0;">${(getRowStatus(row) || 'PENDING').toUpperCase()}</span>`;
+
+          tr.innerHTML = `
+        <td style="font-weight: 700; color: var(--primary-color);">${cNumLabel}</td>
+        <td style="font-weight: 600;">${row.style || '-'}</td>
+        <td style="color: #64748b;">${row.customer || '-'}</td>
+        <td>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <img src="https://i.pravatar.cc/150?u=${encodeURIComponent(actionKey)}" style="width: 28px; height: 28px; border-radius: 50%; border: 1px solid #e2e8f0;" />
+            <span style="font-weight: 500;">${row.assignee || 'Unassigned'}</span>
+          </div>
+        </td>
+        <td style="color: #475569; font-size: 13px;">${createdDtStr}</td>
+        <td>${statusBadge}</td>
+        <td style="font-weight: 500;">${plOverdueCol}</td>
+        <td>${actionBtn}</td>
+      `;
+          tableBody.appendChild(tr);
+        });
+
+        // Event listeners
+        tableBody.querySelectorAll('.upload-acc-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const id = e.currentTarget.getAttribute('data-id');
+            const rowData = findRowForAction(id);
+            if (rowData) {
+              const reqId = getRequestIdForPost(rowData);
+              document.getElementById('active-req-id').textContent = reqId;
+              const reqPill = document.getElementById('config-req-id');
+              if (reqPill) reqPill.textContent = reqId ? `#${reqId}` : '';
+              document.getElementById('active-req-style').textContent = `${rowData.style || '-'} | ${rowData.customer || '-'}`;
+              document.getElementById('config-pl-name').textContent = `PL: ${rowData.assignee || 'Unassigned'}`;
+              document.getElementById('browse-files-btn').dataset.link = rowData.folderLink || rowData.folder_path || rowData.folder_link || '';
+              activeRequestBanner.style.display = 'none';
+              uploadConfigSection.style.display = 'block';
+              fillUploadDetailPanel(rowData, reqId);
+              if (uploadModal) uploadModal.style.display = 'flex';
+            }
+          });
+        });
+
+        tableBody.querySelectorAll('.details-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const id = e.currentTarget.getAttribute('data-id');
+            const rowData = findRowForAction(id);
+            if (rowData) showDetails(rowData);
+          });
+        });
+      }
+
+      function showDetails(row) {
+        const content = document.getElementById('details-content');
+        const fields = [
+          { label: 'C_Number', value: formatCNumberDisplay(row) },
+          { label: 'ID (sheet column B)', value: getSheetListId(row) || '—' },
+          { label: 'Customer', value: row.customer },
+          { label: 'Style Name', value: row.style },
+          { label: 'Current Status', value: getRowStatus(row) },
+          { label: 'Folder Link', value: row.folderLink || row.folder_path || row.folder_link, isLink: true }
+        ];
+
+        content.innerHTML = fields.map(f => `
+      <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f5f9;">
+        <span style="color: #64748b; font-weight: 500;">${f.label}</span>
+        <span style="font-weight: 600;">${f.isLink ? `<a href="${f.value}" target="_blank" style="color: var(--primary-color);">Open link</a>` : (f.value || '-')}</span>
+      </div>
+    `).join('');
+        document.getElementById('details-modal').style.display = 'flex';
+      }
+
+      function openRemarks(id) {
+        const rowData = findRowForAction(id);
+        if (!rowData) return;
+        const text = rowData.Remarks || rowData.remarks || rowData.Storage_Area_Remarks || '';
+        alert(text ? String(text) : 'No remarks for this request.');
+      }
+
+      // Browse Folder
+      document.getElementById('browse-files-btn').addEventListener('click', (e) => {
+        const link = e.currentTarget.dataset.link;
+        if (link && link.startsWith('http')) window.open(link, '_blank');
+        else alert('No folder link available for this request.');
+      });
+
+      // Submit Acc
+      document.getElementById('submit-acc-btn').addEventListener('click', async () => {
+        const id = document.getElementById('active-req-id').textContent;
+        const btn = document.getElementById('submit-acc-btn');
+        const oldText = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = 'Processing...';
+
+        try {
+          await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ requestId: id, status: 'COMPLETE ACC', sheet: ACC_SHEET_QUERY, timestamp: new Date().toISOString() })
+          });
+          const row = findRowForAction(id);
+          if (row) row.status = 'COMPLETE ACC';
+          alert(`✅ ${id} marked as COMPLETE ACC!`);
+          activeRequestBanner.style.display = 'none';
+          uploadConfigSection.style.display = 'none';
+          if (uploadModal) uploadModal.style.display = 'none';
+          renderAll();
+        } catch (err) {
+          console.error(err);
+          alert('Failed to update status.');
+        } finally {
+          btn.disabled = false;
+          btn.textContent = oldText;
+        }
+      });
+
+      // Save selected status from upload panel
+      document.getElementById('save-acc-status-btn').addEventListener('click', async () => {
+        const btn = document.getElementById('save-acc-status-btn');
+        const statusSelect = document.getElementById('upload-status-select');
+        const actionKey = btn.dataset.id || '';
+        const row = findRowForAction(actionKey);
+        if (!row || !statusSelect) {
+          alert('Please select a request first.');
+          return;
+        }
+
+        const selectedStatus = String(statusSelect.value || '').trim();
+        if (!selectedStatus) {
+          alert('Please select a status.');
+          return;
+        }
+
+        const requestId = getRequestIdForPost(row);
+        const oldText = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = 'Saving...';
+        try {
+          await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ requestId, status: selectedStatus, sheet: ACC_SHEET_QUERY, timestamp: new Date().toISOString() })
+          });
+          row.status = selectedStatus;
+          renderAll();
+          alert(`✅ ${requestId} updated to ${selectedStatus}`);
+        } catch (err) {
+          console.error(err);
+          alert('Failed to save status.');
+        } finally {
+          btn.disabled = false;
+          btn.textContent = oldText;
+        }
+      });
+
+      // Navigation
+      document.getElementById('nav-uploads').addEventListener('click', (e) => {
+        e.preventDefault();
+        currentTab = 'Uploads';
+        setActiveLink('nav-uploads');
+        renderAll();
+      });
+      document.getElementById('nav-completed').addEventListener('click', (e) => {
+        e.preventDefault();
+        currentTab = 'Completed';
+        setActiveLink('nav-completed');
+        renderAll();
+      });
+      document.getElementById('nav-calendar').addEventListener('click', (e) => {
+        e.preventDefault();
+        currentTab = 'Calendar';
+        setActiveLink('nav-calendar');
+        renderAll();
+      });
+
+      function setActiveLink(id) {
+        document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+      }
+
+      // Search
+      document.getElementById('search-input').addEventListener('input', (e) => {
+        searchText = e.target.value.trim();
+        renderAll();
+      });
+
+      // Footer/UI Bindings
+      document.getElementById('close-details-btn').addEventListener('click', () => document.getElementById('details-modal').style.display = 'none');
+      document.getElementById('clear-request-btn').addEventListener('click', () => {
+        activeRequestBanner.style.display = 'none';
+        uploadConfigSection.style.display = 'none';
+        if (uploadModal) uploadModal.style.display = 'none';
+        const reqPill = document.getElementById('config-req-id');
+        if (reqPill) reqPill.textContent = '';
+      });
+
+      const closeUploadBtn = document.getElementById('close-upload-modal-btn');
+      if (closeUploadBtn) {
+        closeUploadBtn.addEventListener('click', () => {
+          if (uploadModal) uploadModal.style.display = 'none';
+          uploadConfigSection.style.display = 'none';
+        });
+      }
+
+      // Filters
+      document.getElementById('open-filter').addEventListener('click', () => document.getElementById('filter-modal').style.display = 'flex');
+      document.getElementById('close-filter-btn').addEventListener('click', () => document.getElementById('filter-modal').style.display = 'none');
+
+      document.getElementById('apply-filter-btn').addEventListener('click', () => {
+        advFilter.id = document.getElementById('filter-id').value.trim();
+        advFilter.style = document.getElementById('filter-style').value.trim();
+        advFilter.customer = document.getElementById('filter-cust').value.trim();
+        advFilter.pl = document.getElementById('filter-pl').value.trim();
+
+        renderAll();
+        document.getElementById('filter-modal').style.display = 'none';
+      });
+      function renderCalendar() {
+        const titleNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        const now = new Date();
+        document.getElementById('cal-month-title').textContent = `${titleNames[now.getMonth()]} ${now.getFullYear()}`;
+        document.getElementById('calendar-grid').innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #64748b;">Calendar module active. Showing placeholder...</div>';
+      }
+
+      loadData();
+    });
+
+
+  </script>
+</body>
+
+</html>
