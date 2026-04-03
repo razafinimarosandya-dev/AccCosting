@@ -1250,10 +1250,11 @@
         gallery.innerHTML = '';
 
         const filtered = requestsRows.filter(row => {
-          // Pending tab: show every row from the Acc sheet (search/filters only).
-          // Completed tab: only COMPLETE ACC rows.
-          if (currentTab === 'Completed') {
-            if (normalizeStatus(getRowStatus(row)) !== 'COMPLETE ACC') return false;
+          const s = normalizeStatus(getRowStatus(row));
+          if (currentTab === 'Uploads') {
+            if (s !== 'AWAITING ACC') return false;
+          } else if (currentTab === 'Completed') {
+            if (s !== 'COMPLETE ACC') return false;
           }
 
           if (searchText) {
@@ -1572,8 +1573,12 @@
 
       // Submit Acc
       document.getElementById('submit-acc-btn').addEventListener('click', async () => {
-        const id = document.getElementById('active-req-id').textContent;
+        const id = document.getElementById('acc-detail-id')?.textContent || '';
         const btn = document.getElementById('submit-acc-btn');
+        if (!id || id === '-') {
+           alert('Please select a valid request first.');
+           return;
+        }
         const oldText = btn.textContent;
         btn.disabled = true;
         btn.textContent = 'Processing...';
@@ -1588,8 +1593,7 @@
           const row = findRowForAction(id);
           if (row) row.status = 'COMPLETE ACC';
           alert(`✅ ${id} marked as COMPLETE ACC!`);
-          activeRequestBanner.style.display = 'none';
-          uploadConfigSection.style.display = 'none';
+          if (uploadConfigSection) uploadConfigSection.style.display = 'none';
           if (uploadModal) uploadModal.style.display = 'none';
           renderAll();
         } catch (err) {
