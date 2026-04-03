@@ -854,7 +854,6 @@
       let advFilter = { id: '', style: '', customer: '', pl: '' };
 
       const tableBody = document.getElementById('table-body');
-      const activeRequestBanner = document.getElementById('active-request-banner');
       const uploadConfigSection = document.getElementById('upload-config-section');
       const uploadModal = document.getElementById('upload-modal');
 
@@ -1168,21 +1167,21 @@
 
       async function loadData() {
         tableBody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 60px; color: #64748b;">⏳ Fetching production data from Acc sheet...</td></tr>';
-        
+
         try {
           const sheetParam = encodeURIComponent(ACC_SHEET_QUERY);
           const url = `${GOOGLE_SCRIPT_URL}?sheet=${sheetParam}&t=${Date.now()}`;
           console.log('🔄 Fetching from:', url);
-          
+
           const response = await fetch(url);
           if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-          
+
           const text = await response.text();
           console.log('📄 Raw response start:', text.slice(0, 100));
-          
+
           const data = parseJsonSafe(text);
           console.log('✅ Loaded rows:', data.length);
-          
+
           requestsRows = data;
           populateDatalists();
           renderAll();
@@ -1379,15 +1378,14 @@
             const rowData = findRowForAction(id);
             if (rowData) {
               const reqId = getRequestIdForPost(rowData);
-              document.getElementById('active-req-id').textContent = reqId;
               const reqPill = document.getElementById('config-req-id');
               if (reqPill) reqPill.textContent = reqId ? `#${reqId}` : '';
-              document.getElementById('active-req-style').textContent = `${rowData.style || '-'} | ${rowData.customer || '-'}`;
-              document.getElementById('config-pl-name').textContent = `PL: ${rowData.assignee || 'Unassigned'}`;
-              document.getElementById('browse-files-btn').dataset.link = rowData.folderLink || rowData.folder_path || rowData.folder_link || '';
+              
+              const bfb = document.getElementById('browse-files-btn');
+              if (bfb) bfb.dataset.link = rowData.folderLink || rowData.folder_path || rowData.folder_link || '';
+              
               setupUploadStatusControls(rowData, id);
-              activeRequestBanner.style.display = 'none';
-              uploadConfigSection.style.display = 'block';
+              if (uploadConfigSection) uploadConfigSection.style.display = 'block';
               fillUploadDetailPanel(rowData, reqId);
               if (uploadModal) uploadModal.style.display = 'flex';
             }
@@ -1669,20 +1667,33 @@
       }
 
       // Search
-      document.getElementById('search-input').addEventListener('input', (e) => {
-        searchText = e.target.value.trim();
-        renderAll();
-      });
+      const searchInput = document.getElementById('search-input');
+      if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+          searchText = e.target.value.trim();
+          renderAll();
+        });
+      }
 
       // Footer/UI Bindings
-      document.getElementById('close-details-btn').addEventListener('click', () => document.getElementById('details-modal').style.display = 'none');
-      document.getElementById('clear-request-btn').addEventListener('click', () => {
-        activeRequestBanner.style.display = 'none';
-        uploadConfigSection.style.display = 'none';
-        if (uploadModal) uploadModal.style.display = 'none';
-        const reqPill = document.getElementById('config-req-id');
-        if (reqPill) reqPill.textContent = '';
-      });
+      const closeDetailsBtn = document.getElementById('close-details-btn');
+      if (closeDetailsBtn) {
+        closeDetailsBtn.addEventListener('click', () => {
+          const detModal = document.getElementById('details-modal');
+          if (detModal) detModal.style.display = 'none';
+        });
+      }
+
+      const clearRequestBtn = document.getElementById('clear-request-btn');
+      if (clearRequestBtn) {
+        clearRequestBtn.addEventListener('click', () => {
+          if (activeRequestBanner) activeRequestBanner.style.display = 'none';
+          if (uploadConfigSection) uploadConfigSection.style.display = 'none';
+          if (uploadModal) uploadModal.style.display = 'none';
+          const reqPill = document.getElementById('config-req-id');
+          if (reqPill) reqPill.textContent = '';
+        });
+      }
 
       const closeUploadBtn = document.getElementById('close-upload-modal-btn');
       if (closeUploadBtn) {
@@ -1693,18 +1704,34 @@
       }
 
       // Filters
-      document.getElementById('open-filter').addEventListener('click', () => document.getElementById('filter-modal').style.display = 'flex');
-      document.getElementById('close-filter-btn').addEventListener('click', () => document.getElementById('filter-modal').style.display = 'none');
+      const openFilterBtn = document.getElementById('open-filter');
+      if (openFilterBtn) {
+        openFilterBtn.addEventListener('click', () => {
+          const fModal = document.getElementById('filter-modal');
+          if (fModal) fModal.style.display = 'flex';
+        });
+      }
 
-      document.getElementById('apply-filter-btn').addEventListener('click', () => {
-        advFilter.id = document.getElementById('filter-id').value.trim();
-        advFilter.style = document.getElementById('filter-style').value.trim();
-        advFilter.customer = document.getElementById('filter-cust').value.trim();
-        advFilter.pl = document.getElementById('filter-pl').value.trim();
+      const closeFilterBtn = document.getElementById('close-filter-btn');
+      if (closeFilterBtn) {
+        closeFilterBtn.addEventListener('click', () => {
+          const fModal = document.getElementById('filter-modal');
+          if (fModal) fModal.style.display = 'none';
+        });
+      }
 
-        renderAll();
-        document.getElementById('filter-modal').style.display = 'none';
-      });
+      const applyFilterBtn = document.getElementById('apply-filter-btn');
+      if (applyFilterBtn) {
+        applyFilterBtn.addEventListener('click', () => {
+          advFilter.id = (document.getElementById('filter-id')?.value || '').trim();
+          advFilter.style = (document.getElementById('filter-style')?.value || '').trim();
+          advFilter.customer = (document.getElementById('filter-cust')?.value || '').trim();
+          advFilter.pl = (document.getElementById('filter-pl')?.value || '').trim();
+          renderAll();
+          const fModal = document.getElementById('filter-modal');
+          if (fModal) fModal.style.display = 'none';
+        });
+      }
       function renderCalendar() {
         const titleNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
         const now = new Date();
