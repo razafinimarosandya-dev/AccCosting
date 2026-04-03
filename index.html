@@ -1136,19 +1136,13 @@
         requestsRows = [];
         const gallery = document.getElementById('gallery-container');
         if (gallery) {
-          gallery.classList.add('pattern-gallery-grid--open');
-          gallery.style.display = 'flex';
-          gallery.innerHTML = `<div class="pattern-gallery-empty" style="text-align:left;max-width:640px;margin:0 auto;padding:16px;">
-        <strong style="color:#b91c1c;">Could not load Acc data</strong>
-        <p style="margin:10px 0 0;color:#475569;font-size:14px;">${String(message || '').replace(/</g, '&lt;')}</p>
-        <p style="margin:12px 0 0;font-size:12px;color:#64748b;">If the sheet tab is not exactly <code>Acc</code>, set in console: <code>localStorage.setItem('ACC_SHEET_NAME','YourTabName')</code> then reload. Or deploy the latest Apps Script and use <code>localStorage.setItem('ACC_SCRIPT_URL','…/exec')</code> if the URL changed.</p>
-      </div>`;
+          gallery.style.display = 'block';
+          gallery.innerHTML = `<div class="pattern-gallery-empty" style="text-align:center; padding:40px; color:#ef4444;">
+            <strong>Error Loading Accessories</strong><br>
+            ${message}
+          </div>`;
         }
-        const paginationInfo = document.getElementById('pagination-info');
-        if (paginationInfo) paginationInfo.textContent = 'Showing 0 items';
-        populateDatalists();
-        updateStats();
-        updateAccHeaderSubtitle();
+        document.getElementById('pagination-info').textContent = 'Showing 0 items';
       }
 
       function parseJsonSafe(text) {
@@ -1173,129 +1167,28 @@
       }
 
       async function loadData() {
-        showFileProtocolBanner();
-        tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 60px; color: #64748b;">⏳ Fetching production data from Acc sheet...</td></tr>';
-        const sheetParam = encodeURIComponent(ACC_SHEET_QUERY);
-        const urlsToTry = [
-          `${GOOGLE_SCRIPT_URL}?sheet=${sheetParam}&t=${Date.now()}`,
-          `${GOOGLE_SCRIPT_URL}?sheet=Acc&t=${Date.now()}`,
-          `${GOOGLE_SCRIPT_URL}?sheet=ACC&t=${Date.now()}`
-        ];
-        const uniqueUrls = [...new Set(urlsToTry)];
-
+        tableBody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 60px; color: #64748b;">⏳ Fetching production data from Acc sheet...</td></tr>';
+        
         try {
-          let lastErr = '';
-          let data = null;
-          let lastUrl = '';
-          let lastHttpStatus = 0;
-
-          for (const url of uniqueUrls) {
-            console.log('🔄 Attempting fetch from:', url);
-            lastUrl = url;
-            const response = await fetch(url, {
-              method: 'GET',
-              mode: 'cors',
-              cache: 'no-store',
-              credentials: 'omit'
-            });
-            lastHttpStatus = response.status;
-            const text = await response.text();
-            console.log('📄 Raw response start:', text.slice(0, 100));
-            let parsed;
-            try {
-              parsed = parseJsonSafe(text);
-              console.log('✅ JSON parsed successfully, elements:', Array.isArray(parsed) ? parsed.length : (parsed && parsed.data ? parsed.data.length : 'Object'));
-            } catch (e) {
-              lastErr =
-                'Could not parse JSON (HTTP ' +
-                response.status +
-                '). Deploy the web app with access Anyone (anonymous) and open the Test URL in a new tab. Parse error: ' +
-                (e && e.message ? e.message : String(e)) +
-                '. Raw start: ' +
-                text.slice(0, 180).replace(/</g, '&lt;');
-              continue;
-            }
-
-            if (parsed && parsed.error) {
-              lastErr = String(parsed.error);
-              continue;
-            }
-
-            if (Array.isArray(parsed)) {
-              data = parsed;
-              break;
-            }
-            if (parsed && typeof parsed === 'object') {
-              const rows = Array.isArray(parsed.rows)
-                ? parsed.rows
-                : Array.isArray(parsed.data)
-                  ? parsed.data
-                  : Array.isArray(parsed.records)
-                    ? parsed.records
-                    : null;
-              if (rows && rows.length) {
-                data = rows;
-                break;
-              }
-              if (rows && rows.length === 0 && !parsed.error) {
-                data = [];
-                break;
-              }
-            }
-            lastErr = 'Unexpected response shape from Apps Script.';
-          }
-
-          if (typeof window !== 'undefined') {
-            window.__ACC_LAST_FETCH__ = {
-              url: lastUrl,
-              httpStatus: lastHttpStatus,
-              rowCount: Array.isArray(data) ? data.length : null,
-              error: lastErr || null
-            };
-          }
-
-          if (data === null) {
-            const testUrl = uniqueUrls[0] || GOOGLE_SCRIPT_URL + '?sheet=Acc';
-            showGalleryLoadError(
-              (lastErr || 'No usable JSON array in response.') +
-              ' — Open this link in your browser to verify the API: ' +
-              testUrl
-            );
-            return;
-          }
-
-          if (data.length === 0) {
-            requestsRows = [];
-            const testUrl = uniqueUrls[0] || GOOGLE_SCRIPT_URL + '?sheet=Acc';
-            const gallery = document.getElementById('gallery-container');
-            if (gallery) {
-              gallery.classList.add('pattern-gallery-grid--open');
-              gallery.style.display = 'flex';
-              gallery.innerHTML = `<div class="pattern-gallery-empty" style="text-align:left;max-width:720px;padding:16px;">
-            <strong>Connected, but 0 rows returned</strong>
-            <p style="margin:10px 0;color:#475569;font-size:14px;">The Apps Script answered with an empty list <code>[]</code>. Often the web app is tied to a <em>different</em> spreadsheet than the one where your Acc tab has data, or row 1 is not the only header row.</p>
-            <p style="margin:0 0 8px;font-size:13px;"><a href="${testUrl.replace(/"/g, '&quot;')}" target="_blank" rel="noopener noreferrer" style="color:#2563eb;">Open this URL in a new tab</a> — you should see a JSON array. If it is <code>[]</code>, fix the script deployment (must use the spreadsheet that contains the Acc sheet) or add data from row 2 downward under a single header row.</p>
-            <p style="margin:0;font-size:12px;color:#64748b;">Script URL in use: <code style="word-break:break-all;">${String(GOOGLE_SCRIPT_URL).replace(/</g, '&lt;')}</code></p>
-          </div>`;
-            }
-            populateDatalists();
-            updateStats();
-            updateAccHeaderSubtitle();
-            const paginationInfo = document.getElementById('pagination-info');
-            if (paginationInfo) paginationInfo.textContent = 'Showing 0 items';
-            return;
-          }
-
+          const sheetParam = encodeURIComponent(ACC_SHEET_QUERY);
+          const url = `${GOOGLE_SCRIPT_URL}?sheet=${sheetParam}&t=${Date.now()}`;
+          console.log('🔄 Fetching from:', url);
+          
+          const response = await fetch(url);
+          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+          
+          const text = await response.text();
+          console.log('📄 Raw response start:', text.slice(0, 100));
+          
+          const data = parseJsonSafe(text);
+          console.log('✅ Loaded rows:', data.length);
+          
           requestsRows = data;
-          if (typeof window !== 'undefined') {
-            window.__ACC_DEBUG_FIRST_ROW__ = requestsRows[0] || null;
-            window.__ACC_DEBUG_ROW_KEYS__ = requestsRows[0] ? Object.keys(requestsRows[0]) : [];
-          }
           populateDatalists();
           renderAll();
         } catch (err) {
-          console.error(err);
-          showGalleryLoadError(err.message || String(err));
+          console.error('Fetch error:', err);
+          showGalleryLoadError(`Failed to load data: ${err.message}`);
         }
       }
 
@@ -1394,20 +1287,19 @@
 
         if (filtered.length === 0) {
           const total = requestsRows.length;
+          console.log('⚠️ No items to show in gallery. Total items:', total, 'Tab:', currentTab);
           let emptyMsg;
           if (total === 0) {
             emptyMsg =
               currentTab === 'Completed'
                 ? 'No processed items found.'
-                : 'No requests loaded from the Acc sheet. Confirm the web app URL and that the Acc tab has a header row and data from row 2 onward.';
+                : 'No requests loaded from the Acc sheet. Confirm the web app URL and that the Acc tab has a header row and data from row 2 downward.';
           } else if (currentTab === 'Completed') {
-            emptyMsg = `Loaded ${total} row(s) from the sheet, but none have status "COMPLETE ACC". Open the Pending tab to see awaiting items, or update Status in the sheet.`;
-          } else if (searchText || advFilter.id || advFilter.style || advFilter.customer || advFilter.pl) {
-            emptyMsg = `Loaded ${total} row(s), but none match the current search or filters. Clear the search box and open Filter Data → reset filters.`;
+            emptyMsg = `Loaded ${total} item(s), but none have status "COMPLETE ACC". Status in sheet: [${[...new Set(requestsRows.map(r => getRowStatus(r)))].join(', ')}]`;
           } else {
-            emptyMsg = 'No rows to display (unexpected). Check the browser console for errors.';
+            emptyMsg = `Loaded ${total} item(s), but none match filters. Statuses found: [${[...new Set(requestsRows.map(r => getRowStatus(r)))].join(', ')}]`;
           }
-          gallery.innerHTML = `<div class="pattern-gallery-empty">${emptyMsg}</div>`;
+          gallery.innerHTML = `<div class="pattern-gallery-empty" style="padding: 40px; text-align: center; color: #64748b;">${emptyMsg}</div>`;
           return;
         }
 
