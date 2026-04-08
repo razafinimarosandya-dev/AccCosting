@@ -593,7 +593,7 @@
           <input type="text" id="search-input" placeholder="Search Style or C_Number..." />
         </div>
         <div class="nav-links">
-          <a href="../vanilla/index.html" style="opacity: 0.6; font-size: 12px; margin-right: 15px;">Main Hub</a>
+          <a href="https://costing-home.vercel.app/" style="opacity: 1; font-size: 16px; margin-right: 15px;">Home</a>
           <a href="#" class="active" id="nav-uploads">Pending</a>
           <a href="#" id="nav-completed">Completed</a>
           <a href="#" id="nav-calendar">Calendar</a>
@@ -1381,10 +1381,10 @@
               const reqId = getRequestIdForPost(rowData);
               const reqPill = document.getElementById('config-req-id');
               if (reqPill) reqPill.textContent = reqId ? `#${reqId}` : '';
-              
+
               const bfb = document.getElementById('browse-files-btn');
               if (bfb) bfb.dataset.link = rowData.folderLink || rowData.folder_path || rowData.folder_link || '';
-              
+
               setupUploadStatusControls(rowData, id);
               if (uploadConfigSection) uploadConfigSection.style.display = 'block';
               fillUploadDetailPanel(rowData, reqId);
@@ -1537,23 +1537,46 @@
         });
       }
 
-      function showDetails(row) {
+      function showDetails(rowData) {
+        if (!rowData) return;
         const content = document.getElementById('details-content');
-        const fields = [
-          { label: 'C_Number', value: formatCNumberDisplay(row) },
-          { label: 'ID (sheet column B)', value: getSheetListId(row) || '—' },
-          { label: 'Customer', value: row.customer },
-          { label: 'Style Name', value: row.style },
-          { label: 'Current Status', value: getRowStatus(row) },
-          { label: 'Folder Link', value: row.folderLink || row.folder_path || row.folder_link, isLink: true }
+        const displayFields = [
+          { label: 'Request ID', value: formatCNumberDisplay(rowData) || getSheetListId(rowData) || rowData.id || rowData.C_Number },
+          { label: 'Title', value: rowData.Title || rowData.Style || rowData.style },
+          { label: 'Customer', value: rowData.Customer || rowData.customer },
+          { label: 'Cus Dept', value: rowData.Cus_Dept || rowData.cusDept || rowData['Customer Department'] },
+          { label: 'TKL Season', value: rowData.TKL_Season || rowData.tklSeason },
+          { label: 'Main Fabric', value: rowData.Main_Fabric || rowData.mainFabric },
+          { label: 'Fabric Header', value: rowData.Fabric_Header || rowData.fabricHeader },
+          { label: 'PL Name', value: rowData.PL_Name || rowData.assignee || rowData.PM_Name || rowData.Pattern_Maker },
+          { label: 'Status', value: getRowStatus(rowData) || rowData.Status || rowData.status },
+          { label: 'Created', value: rowData.Created || rowData.createdDate || rowData.Requested_Date || rowData.Cads_Uploaded_Date || rowData.Uploaded_Date },
+          { label: 'Created By', value: rowData['Created By'] || rowData.createdBy },
+          { label: 'Remarks', value: rowData.remarks || rowData.Remarks || '-' },
+          { label: 'Folder Path', value: rowData.Folder_Path || rowData.folderLink || rowData.folder_path || rowData.folder_link || '-' }
         ];
 
-        content.innerHTML = fields.map(f => `
-      <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f5f9;">
-        <span style="color: #64748b; font-weight: 500;">${f.label}</span>
-        <span style="font-weight: 600;">${f.isLink ? `<a href="${f.value}" target="_blank" style="color: var(--primary-color);">Open link</a>` : (f.value || '-')}</span>
-      </div>
-    `).join('');
+        content.innerHTML = displayFields.map(field => {
+          let displayValue = field.value || '-';
+          if (field.label === 'Created' && displayValue !== '-') {
+            displayValue = typeof formatToDDMMYYYY === 'function' ? formatToDDMMYYYY(displayValue) : displayValue;
+          } else if (field.label === 'Status') {
+            displayValue = `<span class="badge" style="background-color: #d1fae5; color: #059669; padding: 4px 8px; border-radius: 12px; font-weight: 600; font-size: 11px;">${displayValue}</span>`;
+          } else if (field.label === 'Folder Path' && displayValue !== '-') {
+            if (String(displayValue).startsWith('http')) {
+              displayValue = `<a href="${displayValue}" target="_blank" style="color: var(--primary-color); text-decoration: underline; word-break: break-all;">Open Folder</a>`;
+            } else {
+              displayValue = `<span style="word-break: break-all; font-family: monospace; font-size: 11px; background: #f3f4f6; padding: 4px 6px; border-radius: 4px;">${displayValue}</span>`;
+            }
+          }
+
+          return `
+            <div style="display:flex; justify-content:space-between; border-bottom:1px solid #f3f4f6; padding: 10px 4px; align-items: flex-start; gap: 16px;">
+              <strong style="color: var(--text-muted); font-weight: 500; min-width: 120px;">${field.label}</strong>
+              <span style="color: var(--text-main); font-weight: 500; text-align: right; word-break: break-word;">${displayValue}</span>
+            </div>
+          `;
+        }).join('');
         document.getElementById('details-modal').style.display = 'flex';
       }
 
@@ -1576,8 +1599,8 @@
         const id = document.getElementById('acc-detail-id')?.textContent || '';
         const btn = document.getElementById('submit-acc-btn');
         if (!id || id === '-') {
-           alert('Please select a valid request first.');
-           return;
+          alert('Please select a valid request first.');
+          return;
         }
         const oldText = btn.textContent;
         btn.disabled = true;
@@ -1736,11 +1759,170 @@
           if (fModal) fModal.style.display = 'none';
         });
       }
+      // --- Calendar (anchored on completed acc date) ---
+      let calCurrentDate = new Date();
       function renderCalendar() {
-        const titleNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-        const now = new Date();
-        document.getElementById('cal-month-title').textContent = `${titleNames[now.getMonth()]} ${now.getFullYear()}`;
-        document.getElementById('calendar-grid').innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #64748b;">Calendar module active. Showing placeholder...</div>';
+        const grid = document.getElementById('calendar-grid');
+        if (!grid) return;
+        grid.innerHTML = '';
+
+        const year = calCurrentDate.getFullYear();
+        const month = calCurrentDate.getMonth();
+
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        const calTitle = document.getElementById('cal-month-title');
+        if (calTitle) calTitle.textContent = `${monthNames[month]} ${year}`;
+
+        const firstDayIndex = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        const dayCounts = {};
+
+        const globalParseSheetDate = (dateStr) => {
+          if (!dateStr || String(dateStr).trim() === '-' || String(dateStr).trim() === '') return null;
+          const parts = String(dateStr).trim().split(' ');
+          const datePart = parts[0];
+          const timePart = parts[1] || '00:00:00';
+          if (datePart.includes('/')) {
+            const pts = datePart.split('/');
+            if (pts.length === 3) {
+              const yr = pts[2].length === 2 ? '20' + pts[2] : pts[2];
+              const d = new Date(`${yr}-${pts[1]}-${pts[0]}T${timePart}`);
+              if (!isNaN(d)) return d;
+            }
+          }
+          const fallback = new Date(dateStr);
+          return isNaN(fallback) ? null : fallback;
+        };
+
+        const getCalendarDateStr = (row) => row.Costing_Ready_Date || row.Created || row.createdDate || row.Due || row.due || '';
+
+        const calendarRows = requestsRows.filter((r) => normalizeStatus(getRowStatus(r)) === 'COMPLETE ACC');
+
+        calendarRows.forEach((row) => {
+          const d = globalParseSheetDate(getCalendarDateStr(row));
+          if (d && !isNaN(d) && d.getFullYear() === year && d.getMonth() === month) {
+            const day = d.getDate();
+            dayCounts[day] = (dayCounts[day] || 0) + 1;
+          }
+        });
+
+        for (let x = 0; x < firstDayIndex; x++) {
+          const emptyCell = document.createElement('div');
+          emptyCell.style.background = '#f9fafb';
+          emptyCell.style.borderRadius = '6px';
+          grid.appendChild(emptyCell);
+        }
+
+        for (let i = 1; i <= daysInMonth; i++) {
+          const dayCell = document.createElement('div');
+          dayCell.style.border = '1px solid #e5e7eb';
+          dayCell.style.borderRadius = '6px';
+          dayCell.style.padding = '8px';
+          dayCell.style.display = 'flex';
+          dayCell.style.flexDirection = 'column';
+          dayCell.style.backgroundColor = '#ffffff';
+
+          const dateNumber = document.createElement('strong');
+          dateNumber.style.color = '#374151';
+          dateNumber.textContent = String(i);
+          dayCell.appendChild(dateNumber);
+
+          if (dayCounts[i]) {
+            const countBadge = document.createElement('div');
+            countBadge.style.marginTop = 'auto';
+            countBadge.style.backgroundColor = 'var(--primary-color)';
+            countBadge.style.color = '#fff';
+            countBadge.style.padding = '4px 8px';
+            countBadge.style.borderRadius = '4px';
+            countBadge.style.fontSize = '12px';
+            countBadge.style.fontWeight = 'bold';
+            countBadge.style.textAlign = 'center';
+            countBadge.style.cursor = 'pointer';
+            countBadge.textContent = `${dayCounts[i]} completion${dayCounts[i] > 1 ? 's' : ''}`;
+
+            countBadge.addEventListener('mouseenter', () => { countBadge.style.opacity = '0.8'; });
+            countBadge.addEventListener('mouseleave', () => { countBadge.style.opacity = '1'; });
+
+            countBadge.addEventListener('click', () => {
+              const dailyReqs = calendarRows.filter((r) => {
+                const rd = globalParseSheetDate(getCalendarDateStr(r));
+                return rd && !isNaN(rd) && rd.getFullYear() === year && rd.getMonth() === month && rd.getDate() === i;
+              });
+
+              let modal = document.getElementById('calendar-day-modal');
+              if (!modal) {
+                // If it doesn't exist, we dynamically create and attach it.
+                modal = document.createElement('div');
+                modal.id = 'calendar-day-modal';
+                modal.className = 'modal-overlay';
+                modal.style.display = 'none';
+                modal.innerHTML = `
+                  <div class="modal-content" style="max-width: 480px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid #e2e8f0;">
+                      <h3 id="calendar-day-title" style="color: var(--text-main); font-weight: 700; font-size: 16px;">Day Details</h3>
+                      <button id="close-calendar-day-btn" style="color: #94a3b8; font-size: 20px;">&times;</button>
+                    </div>
+                    <div id="calendar-day-content" style="max-height: 400px; overflow-y: auto;"></div>
+                  </div>
+                `;
+                document.body.appendChild(modal);
+                document.getElementById('close-calendar-day-btn').addEventListener('click', () => {
+                   document.getElementById('calendar-day-modal').style.display = 'none';
+                });
+              }
+
+              const title = document.getElementById('calendar-day-title');
+              const content = document.getElementById('calendar-day-content');
+
+              if (modal && title && content) {
+                title.textContent = `Completed ACC on ${monthNames[month]} ${i}, ${year}`;
+                content.innerHTML = dailyReqs.map((r, rIdx) => {
+                  const key = getRowActionKey(r, rIdx);
+                  return `
+                  <div style="padding: 10px 8px; border-bottom: 1px solid #f3f4f6; display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+                    <div style="display:flex; flex-direction: column;">
+                      <span style="font-weight: 500; color: var(--text-main);">${formatCNumberDisplay(r)}</span>
+                      <span style="font-size: 12px; color: var(--text-muted);">${r.customer || r.Customer || 'No Customer'}</span>
+                    </div>
+                    <button class="btn-outline calendar-details-btn" data-id="${key}" style="padding: 6px 10px; font-size: 12px; display: inline-flex;">Details</button>
+                  </div>
+                `}).join('');
+
+                content.querySelectorAll('.calendar-details-btn').forEach((btn) => {
+                  btn.addEventListener('click', (ev) => {
+                    const rid = ev.currentTarget.getAttribute('data-id');
+                    const rw = findRowForAction(rid);
+                    if (rw) showDetails(rw);
+                  });
+                });
+                modal.style.display = 'flex';
+              }
+            });
+
+            dayCell.appendChild(countBadge);
+          }
+          grid.appendChild(dayCell);
+        }
+      }
+
+      // We make sure calPrevBtn / calNextBtn handlers exist inside renderCalendar logic (or we can bind them once outside):
+      const calPrevBtn = document.getElementById('cal-prev-btn');
+      if (calPrevBtn && !calPrevBtn.dataset.bound) {
+        calPrevBtn.addEventListener('click', () => {
+          calCurrentDate.setMonth(calCurrentDate.getMonth() - 1);
+          renderCalendar();
+        });
+        calPrevBtn.dataset.bound = 'true';
+      }
+
+      const calNextBtn = document.getElementById('cal-next-btn');
+      if (calNextBtn && !calNextBtn.dataset.bound) {
+        calNextBtn.addEventListener('click', () => {
+          calCurrentDate.setMonth(calCurrentDate.getMonth() + 1);
+          renderCalendar();
+        });
+        calNextBtn.dataset.bound = 'true';
       }
 
       loadData();
