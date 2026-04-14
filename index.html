@@ -5,6 +5,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ACC Dashboard</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 </head>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -684,7 +686,8 @@
                 <div id="acc-detail-fabric" style="font-size:13px; font-weight:600;">-</div>
               </div>
               <div>
-                <div style="font-size:10px; color:#64748b; font-weight:800; text-transform:uppercase;">Fabric Header</div>
+                <div style="font-size:10px; color:#64748b; font-weight:800; text-transform:uppercase;">Fabric Header
+                </div>
                 <div id="acc-detail-header" style="font-size:13px; font-weight:600;">-</div>
               </div>
               <div>
@@ -710,37 +713,44 @@
               style="font-size: 13px; color: #2563eb; text-decoration: underline; word-break: break-all;">Open
               folder</a>
           </div>
-          <div
-            style="display: flex; flex-direction: column; gap: 16px; margin: 16px auto 0 auto; max-width: 800px;">
+          <div style="display: flex; flex-direction: column; gap: 16px; margin: 16px auto 0 auto; max-width: 800px;">
             <div>
               <label for="acc-freight"
                 style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">Freight
                 changes</label>
-              <input type="text" id="acc-freight" class="btn-outline" style="width: 100%; padding: 14px; font-size: 14px;">
+              <input type="text" id="acc-freight" class="btn-outline"
+                style="width: 100%; padding: 14px; font-size: 14px;">
             </div>
             <div>
               <label for="acc-finishing"
                 style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">Finishing
                 cost</label>
-              <input type="text" id="acc-finishing" class="btn-outline" style="width: 100%; padding: 14px; font-size: 14px;">
+              <input type="text" id="acc-finishing" class="btn-outline"
+                style="width: 100%; padding: 14px; font-size: 14px;">
             </div>
             <div>
               <label for="acc-addons"
                 style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">Add
                 ons</label>
-              <input type="text" id="acc-addons" class="btn-outline" style="width: 100%; padding: 14px; font-size: 14px;">
+              <input type="text" id="acc-addons" class="btn-outline"
+                style="width: 100%; padding: 14px; font-size: 14px;">
             </div>
             <div>
               <label for="acc-total"
                 style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">Total
                 cost</label>
-              <input type="text" id="acc-total" class="btn-outline" style="width: 100%; padding: 14px; font-weight: 700; font-size: 14px;">
+              <input type="text" id="acc-total" class="btn-outline"
+                style="width: 100%; padding: 14px; font-weight: 700; font-size: 14px;">
             </div>
           </div>
 
           <div style="max-width: 800px; margin: 20px auto 0 auto;">
-            <label for="acc-remarks-acc" style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">Remarks ACC</label>
-            <textarea id="acc-remarks-acc" class="btn-outline" style="width: 100%; padding: 14px; min-height: 80px; font-size: 14px; resize: vertical;" placeholder="Enter ACC specific remarks..."></textarea>
+            <label for="acc-remarks-acc"
+              style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">Remarks
+              ACC</label>
+            <textarea id="acc-remarks-acc" class="btn-outline"
+              style="width: 100%; padding: 14px; min-height: 80px; font-size: 14px; resize: vertical;"
+              placeholder="Enter ACC specific remarks..."></textarea>
           </div>
 
           <div style="display: flex; justify-content: flex-end; margin: 24px auto 0 auto; max-width: 800px;">
@@ -758,6 +768,15 @@
             <p class="acc-subtitle-text" id="acc-subtitle-text">Managing current accessories production queue</p>
           </div>
           <div style="display: flex; gap: 8px; align-items: center;">
+            <button id="clear-filter-btn" class="btn-ghost" onclick="clearFilters()"
+              style="display: none; align-items: center; gap: 4px; font-weight: 600; color: #ef4444;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+              Clear Filter
+            </button>
             <button class="btn-ghost" id="open-filter"
               style="display: inline-flex; align-items: center; gap: 6px; font-weight: 600; color: #64748b;">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -806,11 +825,6 @@
         <div
           style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding: 0 4px;">
           <div id="pagination-info" class="acc-footer-count">Showing 0 items</div>
-          <div style="display: flex; gap: 8px;">
-            <button class="btn-outline"
-              style="padding: 6px 16px; font-size: 13px; color: #94a3b8; border-color: #e2e8f0; cursor: not-allowed;">Previous</button>
-            <button class="btn-outline" style="padding: 6px 16px; font-size: 13px; border-color: #e2e8f0;">Next</button>
-          </div>
         </div>
       </div>
 
@@ -892,6 +906,7 @@
 
       // Advanced Filters
       let advFilter = { id: '', style: '', customer: '', pl: '' };
+      let currentFilteredData = [];
 
       const tableBody = document.getElementById('table-body');
       const uploadConfigSection = document.getElementById('upload-config-section');
@@ -1258,6 +1273,7 @@
       }
 
       function renderAll() {
+        updateClearFilterVisibility();
         updateStats();
         updateAccHeaderSubtitle();
         const tableContainer = document.getElementById('table-container');
@@ -1318,6 +1334,8 @@
 
           return true;
         });
+
+        currentFilteredData = filtered;
 
         // Update pagination info
         const paginationInfo = document.getElementById('pagination-info');
@@ -1476,6 +1494,8 @@
 
           return true;
         });
+
+        currentFilteredData = filtered;
 
         // Update pagination info
         const paginationInfo = document.getElementById('pagination-info');
@@ -1772,11 +1792,110 @@
           advFilter.style = (document.getElementById('filter-style')?.value || '').trim();
           advFilter.customer = (document.getElementById('filter-cust')?.value || '').trim();
           advFilter.pl = (document.getElementById('filter-pl')?.value || '').trim();
+          updateClearFilterVisibility();
           renderAll();
           const fModal = document.getElementById('filter-modal');
           if (fModal) fModal.style.display = 'none';
         });
       }
+
+      function isFilterApplied() {
+        if (searchText) return true;
+        if (advFilter.id || advFilter.style || advFilter.customer || advFilter.pl) return true;
+        return false;
+      }
+
+      function updateClearFilterVisibility() {
+        const clearBtn = document.getElementById('clear-filter-btn');
+        if (!clearBtn) return;
+        clearBtn.style.display = isFilterApplied() ? 'inline-flex' : 'none';
+      }
+
+      function clearFilters() {
+        searchText = '';
+        const searchInput = document.getElementById('search-input');
+        if (searchInput) searchInput.value = '';
+
+        advFilter = { id: '', style: '', customer: '', pl: '' };
+
+        // Update modal inputs
+        ['filter-id', 'filter-style', 'filter-cust', 'filter-pl'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.value = '';
+        });
+
+        renderAll();
+      }
+
+      window.clearFilters = clearFilters;
+
+      async function exportACCTableToExcel() {
+        try {
+          const data = currentFilteredData || [];
+          if (data.length === 0) {
+            alert('No data to export.');
+            return;
+          }
+
+          const workbook = new ExcelJS.Workbook();
+          const worksheet = workbook.addWorksheet('ACC Dashboard Export');
+
+          // Header
+          const headers = ['C_Number', 'Style', 'Customer', 'Assigned PL', 'Costing Ready Date', 'Status', 'PL Overdue'];
+          const headerRow = worksheet.addRow(headers);
+
+          headerRow.eachCell(cell => {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2563EB' } };
+            cell.font = { color: { argb: 'FFFFFFFF' }, bold: true };
+            cell.alignment = { horizontal: 'center' };
+          });
+
+          // Rows
+          data.forEach(row => {
+            const cn = formatCNumberDisplay(row);
+            const style = row.style || row.Style || '-';
+            const cust = row.customer || row.Customer || '-';
+            const pl = row.assignee || row.PL_Name || 'Unassigned';
+            const due = formatGalleryDue(row);
+            const status = getRowStatus(row) || '-';
+
+            // Calc overdue (simplified for export)
+            let overdueVal = '-';
+            const createdDtStr = row.createdDate || row.Created || '-';
+            if (createdDtStr !== '-') {
+              const created = new Date(createdDtStr);
+              if (!isNaN(created)) {
+                const today = new Date();
+                overdueVal = Math.floor((today - created) / (1000 * 60 * 60)) + ' hr';
+              }
+            }
+
+            worksheet.addRow([cn, style, cust, pl, due, status, overdueVal]);
+          });
+
+          // Styling
+          worksheet.getColumn(1).width = 15;
+          worksheet.getColumn(2).width = 25;
+          worksheet.getColumn(3).width = 20;
+          worksheet.getColumn(4).width = 20;
+          worksheet.getColumn(5).width = 20;
+          worksheet.getColumn(6).width = 15;
+          worksheet.getColumn(7).width = 12;
+
+          const fileName = `ACC_Dashboard_Export_${new Date().toISOString().split('T')[0]}`;
+          const buffer = await workbook.xlsx.writeBuffer();
+          saveAs(new Blob([buffer]), `${fileName}.xlsx`);
+        } catch (err) {
+          console.error('Export error:', err);
+          alert('Export failed: ' + err.message);
+        }
+      }
+
+      const exportBtn = document.getElementById('export-excel-btn');
+      if (exportBtn) {
+        exportBtn.addEventListener('click', exportACCTableToExcel);
+      }
+
       // --- Calendar (anchored on completed acc date) ---
       let calCurrentDate = new Date();
       function renderCalendar() {
