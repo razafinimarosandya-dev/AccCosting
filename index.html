@@ -2176,7 +2176,7 @@
           return isNaN(fallback) ? null : fallback;
         };
 
-        const getCalendarDateStr = (row) => row.Costing_Ready_Date || row.Created || row.createdDate || row.Due || row.due || '';
+        const getCalendarDateStr = (row) => row.acc_uploaded_date || row.Acc_Uploaded_Date || row.Created || row.createdDate || '';
 
         const calendarRows = requestsRows.filter((r) => normalizeStatus(getRowStatus(r)) === 'COMPLETE ACC');
 
