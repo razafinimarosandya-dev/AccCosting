@@ -1261,7 +1261,8 @@
           (row.raw && (row.raw.Costing_Expected_Date || row.raw['Costing Expected Date'] || row.raw.Costing_Expected_date)) ||
           '';
         const s = String(v || '').trim();
-        return s || '-';
+        if (!s || s === '-') return '-';
+        return formatDateToDisplay(s);
       }
 
       function accGalleryStatusBadgeClass(row) {
@@ -1637,8 +1638,8 @@
           const cNumLabel = formatCNumberDisplay(row);
           const tr = document.createElement('tr');
 
-          const createdDtStr = row.createdDate || row.Created || '-';
-          const displayDate = formatDateToDisplay(createdDtStr);
+          const dateToFormat = row.acc_uploaded_date || row.Acc_Uploaded_Date || row.Costing_Expected_Date || row.costing_expected_date || row.Created || row.createdDate || '-';
+          const displayDate = formatDateToDisplay(dateToFormat);
 
           // PL Overdue Logic (Matching Techpack)
           let plOverdueCol = '-';
@@ -2257,7 +2258,9 @@
               const content = document.getElementById('calendar-day-content');
 
               if (modal && title && content) {
-                title.textContent = `Completed ACC on ${monthNames[month]} ${i}, ${year}`;
+                const dayStr = String(i).padStart(2, '0');
+                const monthStr = String(month + 1).padStart(2, '0');
+                title.textContent = `Completed ACC on ${dayStr}/${monthStr}/${year}`;
                 content.innerHTML = dailyReqs.map((r, rIdx) => {
                   const key = getRowActionKey(r, rIdx);
                   return `
