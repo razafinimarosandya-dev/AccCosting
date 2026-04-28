@@ -602,7 +602,7 @@
             <circle cx="11" cy="11" r="8" />
             <line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
-          <input type="text" id="search-input" placeholder="Search Style or C_Number..." />
+          <input type="text" id="search-input" placeholder="Search Customer Reference or C_Number..." />
         </div>
         <div class="nav-links">
           <a href="https://costing-home.vercel.app/" style="opacity: 1; font-size: 16px; margin-right: 15px;">Home</a>
@@ -807,10 +807,10 @@
             <thead>
               <tr>
                 <th>C_Number</th>
-                <th>Style</th>
+                <th>Customer Reference</th>
                 <th>Customer</th>
-                <th>Assigned PL</th>
-                <th>Costing Ready Date</th>
+                <th>PL Name</th>
+                <th>Costing Expected Date</th>
                 <th>Status</th>
                 <th id="th-leadtime">PL Overdue</th>
                 <th style="text-align: center;">Action</th>
@@ -866,10 +866,10 @@
             <datalist id="id-list"></datalist>
           </div>
           <div>
-            <label style="display: block; font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 6px;">STYLE
-              NAME</label>
+            <label style="display: block; font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 6px;">CUSTOMER
+              REFERENCE</label>
             <input type="text" id="filter-style" list="style-list" class="btn-outline"
-              style="width: 100%; text-align: left; padding: 10px;" placeholder="Search or select Style..." />
+              style="width: 100%; text-align: left; padding: 10px;" placeholder="Search or select Customer Reference..." />
             <datalist id="style-list"></datalist>
           </div>
           <div>
@@ -880,14 +880,23 @@
             <datalist id="cust-list"></datalist>
           </div>
           <div>
-            <label style="display: block; font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 6px;">PL
+            <label style="display: block; font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 6px;">ACC
               NAME</label>
-            <input type="text" id="filter-pl" list="pl-list" class="btn-outline"
-              style="width: 100%; text-align: left; padding: 10px;" placeholder="Search or select PL..." />
-            <datalist id="pl-list"></datalist>
+            <input type="text" id="filter-acc" list="acc-list" class="btn-outline"
+              style="width: 100%; text-align: left; padding: 10px;" placeholder="Search or select ACC..." />
+            <datalist id="acc-list"></datalist>
+          </div>
+          <div>
+            <label
+              style="display: block; font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 6px;">STATUS</label>
+            <input type="text" id="filter-status" list="status-list" class="btn-outline"
+              style="width: 100%; text-align: left; padding: 10px;" placeholder="Search or select Status..." />
+            <datalist id="status-list"></datalist>
           </div>
         </div>
         <div style="display: flex; justify-content: flex-end; gap: 12px;">
+          <button class="btn-ghost" id="clear-filter-modal-btn"
+            style="color: #ef4444; font-weight: 600;">Clear Filter</button>
           <button class="btn-outline" id="close-filter-btn">Cancel</button>
           <button class="btn-primary" id="apply-filter-btn">Apply Filters</button>
         </div>
@@ -905,7 +914,7 @@
       let searchText = '';
 
       // Advanced Filters
-      let advFilter = { id: '', style: '', customer: '', pl: '' };
+      let advFilter = { id: '', style: '', customer: '', acc: '', status: '' };
       let currentFilteredData = [];
 
       const tableBody = document.getElementById('table-body');
@@ -1154,11 +1163,13 @@
       }
 
       function formatGalleryDue(row) {
-        const raw = row.raw && typeof row.raw === 'object' ? row.raw : null;
         const v =
           row.due ||
+          row.Costing_Expected_Date ||
+          row.costing_expected_date ||
           row.Costing_Ready_Date ||
-          (raw && (raw.Costing_Ready_Date || raw['Costing Ready Date'] || raw.Costing_ready_date)) ||
+          row.costing_ready_date ||
+          (row.raw && (row.raw.Costing_Expected_Date || row.raw['Costing Expected Date'] || row.raw.Costing_Expected_date)) ||
           '';
         const s = String(v || '').trim();
         return s || '-';
@@ -1255,13 +1266,15 @@
         ];
         const styles = [...new Set(requestsRows.map(r => r.style).filter(Boolean))];
         const customers = [...new Set(requestsRows.map(r => r.customer).filter(Boolean))];
-        const pls = [...new Set(requestsRows.map(r => r.assignee).filter(Boolean))];
+        const accs = [...new Set(requestsRows.map(r => r.ACC_Name || r.Accessory_Name || r.assignee).filter(Boolean))];
+        const statuses = [...new Set(requestsRows.map(r => getRowStatus(r)).filter(Boolean))];
 
         const fills = [
           { id: 'id-list', vals: ids },
           { id: 'style-list', vals: styles },
           { id: 'cust-list', vals: customers },
-          { id: 'pl-list', vals: pls }
+          { id: 'acc-list', vals: accs },
+          { id: 'status-list', vals: statuses }
         ];
 
         fills.forEach(f => {
@@ -1330,7 +1343,8 @@
           }
           if (advFilter.style && !(row.style || row.Style || '').toLowerCase().includes(advFilter.style.toLowerCase())) return false;
           if (advFilter.customer && !(row.customer || row.Customer || '').toLowerCase().includes(advFilter.customer.toLowerCase())) return false;
-          if (advFilter.pl && !(row.assignee || row.PL_Name || '').toLowerCase().includes(advFilter.pl.toLowerCase())) return false;
+          if (advFilter.acc && !(row.ACC_Name || row.Accessory_Name || row.assignee || '').toLowerCase().includes(advFilter.acc.toLowerCase())) return false;
+          if (advFilter.status && !(getRowStatus(row) || '').toLowerCase().includes(advFilter.status.toLowerCase())) return false;
 
           return true;
         });
@@ -1366,10 +1380,10 @@
         head.className = 'pattern-gallery-row pattern-gallery-row--head';
         head.innerHTML = `
       <span>C_Number</span>
-      <span>Style</span>
+      <span>Customer Reference</span>
       <span>Customer</span>
-      <span>Assigned PL</span>
-      <span>Costing ready</span>
+      <span>PL Name</span>
+      <span>Costing expected</span>
       <span>Status</span>
       <span class="pattern-gallery-row__actions">Action</span>
     `;
@@ -1463,6 +1477,24 @@
         document.getElementById('stat-upload-count').textContent = awaitingCount;
         document.getElementById('stat-complete-count').textContent = completeCount;
       }
+      // 
+      // 
+      // 
+      // --- 1. ADD DATE FORMATTER FUNCTION ---
+      function formatDateToYYYYMMDD(dateInput) {
+        if (!dateInput || dateInput === '-' || dateInput === 'N/A') return '-';
+        const date = new Date(dateInput);
+        if (isNaN(date.getTime())) return dateInput; // Return original value when date is invalid
+
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+
+        return `${year}-${month}-${day}`;
+      }
+      // 
+      // 
+      // 
 
       function renderTable() {
         tableBody.innerHTML = '';
@@ -1490,7 +1522,8 @@
           }
           if (advFilter.style && !(row.style || '').toLowerCase().includes(advFilter.style.toLowerCase())) return false;
           if (advFilter.customer && !(row.customer || '').toLowerCase().includes(advFilter.customer.toLowerCase())) return false;
-          if (advFilter.pl && !(row.assignee || '').toLowerCase().includes(advFilter.pl.toLowerCase())) return false;
+          if (advFilter.acc && !(row.ACC_Name || row.Accessory_Name || row.assignee || '').toLowerCase().includes(advFilter.acc.toLowerCase())) return false;
+          if (advFilter.status && !(getRowStatus(row) || '').toLowerCase().includes(advFilter.status.toLowerCase())) return false;
 
           return true;
         });
@@ -1514,6 +1547,9 @@
           const actionKey = getRowActionKey(row, globalIdx >= 0 ? globalIdx : 0);
           const cNumLabel = formatCNumberDisplay(row);
           const tr = document.createElement('tr');
+
+          const displayDate = formatDateToYYYYMMDD(createdDtStr);
+
 
           // PL Overdue Logic (Matching Techpack)
           let plOverdueCol = '-';
@@ -1556,7 +1592,7 @@
             <span style="font-weight: 500;">${row.assignee || 'Unassigned'}</span>
           </div>
         </td>
-        <td style="color: #475569; font-size: 13px;">${createdDtStr}</td>
+        <td style="color: #475569; font-size: 13px;">${displayDate}</td> <!-- UTILISATION ICI -->
         <td>${statusBadge}</td>
         <td style="font-weight: 500;">${plOverdueCol}</td>
         <td>${actionBtn}</td>
@@ -1623,7 +1659,7 @@
         content.innerHTML = displayFields.map(field => {
           let displayValue = field.value || '-';
           if (field.label === 'Created' && displayValue !== '-') {
-            displayValue = typeof formatToDDMMYYYY === 'function' ? formatToDDMMYYYY(displayValue) : displayValue;
+            displayValue = formatDateToYYYYMMDD(displayValue);
           } else if (field.label === 'Status') {
             displayValue = `<span class="badge" style="background-color: #d1fae5; color: #059669; padding: 4px 8px; border-radius: 12px; font-weight: 600; font-size: 11px;">${displayValue}</span>`;
           } else if (field.label === 'Folder Path' && displayValue !== '-') {
@@ -1670,6 +1706,7 @@
             mode: 'no-cors',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+              action: 'submit_acc',
               requestId: id,
               status: 'COMPLETE ACC',
               sheet: ACC_SHEET_QUERY,
@@ -1791,7 +1828,8 @@
           advFilter.id = (document.getElementById('filter-id')?.value || '').trim();
           advFilter.style = (document.getElementById('filter-style')?.value || '').trim();
           advFilter.customer = (document.getElementById('filter-cust')?.value || '').trim();
-          advFilter.pl = (document.getElementById('filter-pl')?.value || '').trim();
+          advFilter.acc = (document.getElementById('filter-acc')?.value || '').trim();
+          advFilter.status = (document.getElementById('filter-status')?.value || '').trim();
           updateClearFilterVisibility();
           renderAll();
           const fModal = document.getElementById('filter-modal');
@@ -1801,7 +1839,7 @@
 
       function isFilterApplied() {
         if (searchText) return true;
-        if (advFilter.id || advFilter.style || advFilter.customer || advFilter.pl) return true;
+        if (advFilter.id || advFilter.style || advFilter.customer || advFilter.acc || advFilter.status) return true;
         return false;
       }
 
@@ -1811,23 +1849,34 @@
         clearBtn.style.display = isFilterApplied() ? 'inline-flex' : 'none';
       }
 
+      function clearAdvancedFilters() {
+        advFilter = { id: '', style: '', customer: '', acc: '', status: '' };
+
+        ['filter-id', 'filter-style', 'filter-cust', 'filter-acc', 'filter-status'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.value = '';
+        });
+
+        updateClearFilterVisibility();
+        renderAll();
+      }
+
       function clearFilters() {
         searchText = '';
         const searchInput = document.getElementById('search-input');
         if (searchInput) searchInput.value = '';
 
-        advFilter = { id: '', style: '', customer: '', pl: '' };
-
-        // Update modal inputs
-        ['filter-id', 'filter-style', 'filter-cust', 'filter-pl'].forEach(id => {
-          const el = document.getElementById(id);
-          if (el) el.value = '';
-        });
-
-        renderAll();
+        clearAdvancedFilters();
       }
 
       window.clearFilters = clearFilters;
+
+      const clearFilterModalBtn = document.getElementById('clear-filter-modal-btn');
+      if (clearFilterModalBtn) {
+        clearFilterModalBtn.addEventListener('click', () => {
+          clearAdvancedFilters();
+        });
+      }
 
       async function exportACCTableToExcel() {
         try {
@@ -1841,7 +1890,7 @@
           const worksheet = workbook.addWorksheet('ACC Dashboard Export');
 
           // Header
-          const headers = ['C_Number', 'Style', 'Customer', 'Assigned PL', 'Costing Ready Date', 'Status', 'PL Overdue'];
+          const headers = ['C_Number', 'Customer Reference', 'Customer', 'PL Name', 'Costing Expected Date', 'Status', 'PL Overdue'];
           const headerRow = worksheet.addRow(headers);
 
           headerRow.eachCell(cell => {
@@ -1976,7 +2025,7 @@
             countBadge.style.fontWeight = 'bold';
             countBadge.style.textAlign = 'center';
             countBadge.style.cursor = 'pointer';
-            countBadge.textContent = `${dayCounts[i]} completion${dayCounts[i] > 1 ? 's' : ''}`;
+            countBadge.textContent = `${dayCounts[i]} complete`;
 
             countBadge.addEventListener('mouseenter', () => { countBadge.style.opacity = '0.8'; });
             countBadge.addEventListener('mouseleave', () => { countBadge.style.opacity = '1'; });
