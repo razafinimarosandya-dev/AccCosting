@@ -547,37 +547,86 @@
     padding: 48px 20px;
     text-align: center;
     color: #64748b;
+  /* Redesigned Modal/Details (revised.html style) */
+  .detail-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    transition: all 0.2s;
+  }
+  .detail-card:hover {
+    border-color: #cbd5e1;
+    background: #f1f5f9;
+  }
+  .detail-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .detail-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1e293b;
+    word-break: break-word;
+  }
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 600px) {
+    .form-grid { grid-template-columns: repeat(2, 1fr); }
   }
 
-  .status-badge {
+  .fabric-opt-chip {
+    border: 1.5px solid #bfdbfe;
+    background: #eff6ff;
+    color: #2563eb;
+    border-radius: 8px;
+    width: 28px;
+    height: 28px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 11.5px;
-    font-weight: 600;
-    padding: 6px 14px;
-    border-radius: 20px;
-    white-space: nowrap;
+    font-weight: 800;
+    font-size: 12px;
   }
 
-  .success-badge {
-    background-color: #ecfdf5;
-    color: #059669;
+  .modal-window {
+    background: white;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 850px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
   }
-
-  .pending-badge {
-    background-color: #ecfdf5;
-    color: #059669;
+  .modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
   }
-
-  .inprogress-badge {
-    background-color: #eff6ff;
-    color: #2563eb;
+  .modal-body {
+    padding: 1.5rem;
+    overflow-y: auto;
   }
-
-  .danger-badge {
-    background-color: #fef2f2;
-    color: #dc2626;
+  .modal-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    justify-content: flex-end;
   }
 </style>
 
@@ -837,14 +886,17 @@
     </main>
 
     <!-- Modals -->
-    <div class="modal" id="details-modal">
-      <div class="card" style="width: 100%; max-width: 550px;">
-        <h3
-          style="margin-bottom: 20px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; color: var(--primary-color);">
-          Request Analytics</h3>
-        <div id="details-content" style="margin-bottom: 24px;"></div>
-        <div style="display: flex; justify-content: flex-end;">
-          <button class="btn-outline" id="close-details-btn">Close</button>
+    <div class="modal" id="details-modal" style="background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px);">
+      <div class="modal-window">
+        <div class="modal-header">
+           <h3 class="modal-title">Request Analytics</h3>
+           <button class="btn-ghost" onclick="document.getElementById('details-modal').style.display='none'" style="font-size: 24px; padding:0 8px;">&times;</button>
+        </div>
+        <div class="modal-body" id="details-content">
+          <!-- Populated via JS -->
+        </div>
+        <div class="modal-footer">
+            <button class="btn-outline" onclick="document.getElementById('details-modal').style.display='none'">Close</button>
         </div>
       </div>
     </div>
@@ -1639,52 +1691,137 @@
         });
       }
 
-      function showDetails(rowData) {
-        if (!rowData) return;
-        const content = document.getElementById('details-content');
-        const displayFields = [
-          { label: 'Request ID', value: formatCNumberDisplay(rowData) || getSheetListId(rowData) || rowData.id || rowData.C_Number },
-          { label: 'Customer_Ref', value: rowData.customer_ref || rowData.Customer_Ref || rowData.style || rowData.title },
-          { label: 'Customer', value: rowData.Customer || rowData.customer },
-          { label: 'Cus Dept', value: rowData.customer_department || rowData.Customer_Department || rowData.Cus_Dept || rowData.cusDept },
-          { label: 'Sample Type', value: rowData.Sample_Type || '-' },
-          { label: 'Season', value: rowData.season || rowData.Season || '-' },
-          { label: 'PL Name', value: rowData.PL_Name || rowData.assignee || rowData.PM_Name || rowData.Pattern_Maker },
-          { label: 'Status', value: getRowStatus(rowData) || rowData.Status || rowData.status },
-          { label: 'Freight changes', value: rowData['Freight changes'] || rowData.freight_changes || (rowData.raw && rowData.raw['Freight changes']) },
-          { label: 'Finishing cost', value: rowData['Finishing cost'] || rowData.finishing_cost || (rowData.raw && rowData.raw['Finishing cost']) },
-          { label: 'Add ons', value: rowData['Add ons'] || rowData.add_ons || (rowData.raw && rowData.raw['Add ons']) },
-          { label: 'Total cost', value: rowData['Total cost'] || rowData.total_cost || (rowData.raw && rowData.raw['Total cost']) },
-          { label: 'Created', value: rowData.created || rowData.Created || rowData.Requested_Date },
-          { label: 'Modified', value: rowData.modified || rowData.Modified },
-          { label: 'ACC Remarks', value: rowData.ACC_Remarks || rowData.acc_remarks || (rowData.raw && (rowData.raw.ACC_Remarks || rowData.raw.acc_remarks)) || '-' },
-          { label: 'Folder Path', value: rowData.Folder_Path || rowData.folderLink || rowData.folder_path || rowData.folder_link || '-' }
-        ].filter(f => {
-          if ((f.label === 'Created' || f.label === 'Modified') && (!f.value || String(f.value).trim() === '-' || String(f.value).trim() === '')) return false;
-          return true;
+      function renderFabricDetails(rowData, targetContainer) {
+        if (!targetContainer) return;
+        const fabricStr = rowData.fabric_add_ons || rowData['Fabric Add Ons'] || (rowData.raw && rowData.raw['Fabric Add Ons']);
+        let fabricRows = [];
+        try {
+          if (fabricStr && fabricStr !== "-" && fabricStr !== "N/A" && fabricStr.startsWith('[')) {
+            fabricRows = JSON.parse(fabricStr);
+          }
+        } catch (e) {
+          console.error("Error parsing fabric add ons", e);
+        }
+
+        if (!Array.isArray(fabricRows) || fabricRows.length === 0) return;
+
+        const columns = [
+          { key: "opt", label: "OPT", width: "45px" },
+          { key: "type", label: "Type", width: "" },
+          { key: "fabric", label: "Fabric Name", width: "" },
+          { key: "gms", label: "GMS", width: "70px" },
+          { key: "composition", label: "Composition", width: "" },
+          { key: "width", label: "Width", width: "70px" },
+          { key: "header", label: "Header", width: "" }
+        ];
+
+        const activeCols = columns.filter(col => {
+          if (col.key === 'opt' || col.key === 'fabric') return true;
+          return fabricRows.some(r => r[col.key] && String(r[col.key]).trim() !== '' && String(r[col.key]).trim() !== '-');
         });
 
-        content.innerHTML = displayFields.map(field => {
-          let displayValue = field.value || '-';
-          if (field.label === 'Created' && displayValue !== '-') {
-            displayValue = formatDateToYYYYMMDD(displayValue);
-          } else if (field.label === 'Status') {
-            displayValue = `<span class="badge" style="background-color: #d1fae5; color: #059669; padding: 4px 8px; border-radius: 12px; font-weight: 600; font-size: 11px;">${displayValue}</span>`;
-          } else if (field.label === 'Folder Path' && displayValue !== '-') {
-            if (String(displayValue).startsWith('http')) {
-              displayValue = `<a href="${displayValue}" target="_blank" style="color: var(--primary-color); text-decoration: underline; word-break: break-all;">Open Folder</a>`;
-            } else {
-              displayValue = `<span style="word-break: break-all; font-family: monospace; font-size: 11px; background: #f3f4f6; padding: 4px 6px; border-radius: 4px;">${displayValue}</span>`;
-            }
-          }
-
-          return `
-            <div style="display:flex; justify-content:space-between; border-bottom:1px solid #f3f4f6; padding: 10px 4px; align-items: flex-start; gap: 8px; flex-wrap: wrap;">
-              <strong style="color: var(--text-muted); font-weight: 500; min-width: 100px; flex: 1 1 120px;">${field.label}</strong>
-              <span style="color: var(--text-main); font-weight: 500; text-align: right; word-break: break-all; flex: 1 1 180px; min-width: 0;">${displayValue}</span>
+        targetContainer.innerHTML = `
+          <div class="fabric-table-wrap" style="margin-top: 20px; margin-bottom: 20px;">
+            <div style="font-size: 11px; text-transform: uppercase; color: #64748b; letter-spacing: 0.05em; font-weight: 700; margin-bottom: 8px;">Fabric Details</div>
+            <div style="overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 8px; background: white;">
+              <table style="width: 100%; border-collapse: collapse; text-align: left; min-width: 600px;">
+                <thead>
+                  <tr style="background: #f8fafc;">${activeCols.map(col => `<th style="padding: 10px 12px; font-size: 11px; font-weight: 700; color: #475569; border-bottom: 2px solid #e2e8f0; text-transform: uppercase; ${col.width ? `width: ${col.width};` : ''}">${col.label}</th>`).join('')}</tr>
+                </thead>
+                <tbody>
+                  ${fabricRows.map((item, idx) => `
+                    <tr>
+                      ${activeCols.map(col => {
+                        let val = item[col.key] || (col.key === 'opt' ? String.fromCharCode(65 + idx) : '-');
+                        if (col.key === 'opt') return `<td style="padding: 10px 12px; border-bottom: 1px solid #f1f5f9;"><div class="fabric-opt-chip">${val}</div></td>`;
+                        return `<td style="padding: 10px 12px; font-size: 13px; color: #1e293b; border-bottom: 1px solid #f1f5f9; ${col.key === 'fabric' ? 'font-weight: 600;' : ''}">${val}</td>`;
+                      }).join('')}
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
             </div>
+          </div>
+        `;
+      }
+
+      function showDetails(rowData) {
+        if (!rowData) return;
+        const raw = rowData.raw || rowData;
+        const content = document.getElementById('details-content');
+        content.innerHTML = '';
+
+        // 1. Grid Info
+        const grid = document.createElement('div');
+        grid.className = 'form-grid';
+        
+        const fields = [
+          { label: 'Request ID', value: formatCNumberDisplay(rowData) },
+          { label: 'Customer_Ref', value: rowData.customer_ref || rowData.Customer_Ref || rowData.style },
+          { label: 'Customer', value: rowData.customer || rowData.Customer },
+          { label: 'Cus Dept', value: rowData.customer_department || rowData.Customer_Department },
+          { label: 'Sample Type', value: rowData.sample_type || rowData.Sample_Type },
+          { label: 'Season', value: rowData.season || rowData.Season },
+          { label: 'PL Name', value: rowData.assignee || rowData.PL_Name },
+          { label: 'Status', value: getRowStatus(rowData) },
+          { label: 'Created', value: rowData.created || rowData.Requested_Date },
+          { label: 'Modified', value: rowData.modified || rowData.Modified },
+          { label: 'Freight changes', value: rowData.freight_changes || rowData['Freight changes'] },
+          { label: 'Finishing cost', value: rowData.finishing_cost || rowData['Finishing cost'] },
+          { label: 'Add ons', value: rowData.add_ons || rowData['Add ons'] },
+          { label: 'Total cost', value: rowData.total_cost || rowData['Total cost'] }
+        ];
+
+        fields.forEach(f => {
+          const val = String(f.value || "").trim();
+          if (!val || val === "-" || val === "N/A") return;
+          
+          let displayVal = f.value;
+          if (f.label === 'Created' || f.label === 'Modified') displayVal = formatDateToYYYYMMDD(f.value);
+
+          const card = document.createElement('div');
+          card.className = 'detail-card';
+          card.innerHTML = `<span class="detail-label">${f.label}</span><div class="detail-value">${displayVal}</div>`;
+          grid.appendChild(card);
+        });
+        content.appendChild(grid);
+
+        // 2. Remarks ACC
+        const accRemarks = rowData.acc_remarks || rowData.ACC_Remarks || (rowData.raw && rowData.raw.ACC_Remarks);
+        if (accRemarks && String(accRemarks).trim() !== '-' && String(accRemarks).trim() !== '') {
+          const card = document.createElement('div');
+          card.className = 'detail-card';
+          card.style.gridColumn = "1 / -1";
+          card.style.marginTop = "8px";
+          card.style.background = "#ffffff";
+          card.style.borderLeft = "4px solid var(--primary-color)";
+          card.innerHTML = `<span class="detail-label" style="color:var(--primary-color)">ACC Remarks</span><div class="detail-value" style="font-weight:500; white-space:pre-wrap;">${accRemarks}</div>`;
+          content.appendChild(card);
+        }
+
+        // 3. Fabric Detail Table
+        const fabricContainer = document.createElement('div');
+        content.appendChild(fabricContainer);
+        renderFabricDetails(rowData, fabricContainer);
+
+        // 4. Folder Link
+        const folderPath = rowData.folder_path || rowData.folderLink || (rowData.raw && rowData.raw['Folder Path']);
+        if (folderPath && String(folderPath).trim() !== '-' && String(folderPath).trim().startsWith('http')) {
+          const card = document.createElement('div');
+          card.className = 'detail-card';
+          card.style.gridColumn = "1 / -1";
+          card.style.marginTop = "12px";
+          card.style.background = "#fff";
+          card.style.border = "1.5px solid #3b82f620";
+          card.innerHTML = `
+            <a href="${folderPath}" target="_blank" style="color: #2563eb; font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 8px;">
+               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+               Open Folder
+            </a>
           `;
-        }).join('');
+          content.appendChild(card);
+        }
+
         document.getElementById('details-modal').style.display = 'flex';
       }
 
