@@ -1792,12 +1792,9 @@
           { label: 'Season', value: rowData.season || rowData.Season },
           { label: 'PL Name', value: rowData.assignee || rowData.PL_Name },
           { label: 'Status', value: getRowStatus(rowData) },
+          { label: 'Uploaded Date', value: rowData.acc_uploaded_date || rowData.Acc_Uploaded_Date || (rowData.raw && rowData.raw.Acc_Uploaded_Date) },
           { label: 'Created', value: rowData.created || rowData.Requested_Date },
-          { label: 'Modified', value: rowData.modified || rowData.Modified },
-          { label: 'Freight changes', value: rowData.freight_changes || rowData['Freight changes'] },
-          { label: 'Finishing cost', value: rowData.finishing_cost || rowData['Finishing cost'] },
-          { label: 'Add ons', value: rowData.add_ons || rowData['Add ons'] },
-          { label: 'Total cost', value: rowData.total_cost || rowData['Total cost'] }
+          { label: 'Modified', value: rowData.modified || rowData.Modified }
         ];
 
         fields.forEach(f => {
@@ -1805,7 +1802,7 @@
           if (!val || val === "-" || val === "N/A") return;
           
           let displayVal = f.value;
-          if (f.label === 'Created' || f.label === 'Modified') displayVal = formatDateToYYYYMMDD(f.value);
+          if (f.label === 'Created' || f.label === 'Modified' || f.label === 'Uploaded Date') displayVal = formatDateToYYYYMMDD(f.value);
 
           const card = document.createElement('div');
           card.className = 'detail-card';
@@ -1814,16 +1811,41 @@
         });
         content.appendChild(grid);
 
-        // 2. Remarks ACC
+        // 2. Cost Analysis Section (Full width rows)
+        const costFields = [
+          { label: 'Freight changes', value: rowData.freight_changes || rowData['Freight changes'] || (rowData.raw && rowData.raw['Freight changes']) },
+          { label: 'Finishing cost', value: rowData.finishing_cost || rowData['Finishing cost'] || (rowData.raw && rowData.raw['Finishing cost']) },
+          { label: 'Add ons', value: rowData.add_ons || rowData['Add ons'] || (rowData.raw && rowData.raw['Add ons']) },
+          { label: 'Total cost', value: rowData.total_cost || rowData['Total cost'] || (rowData.raw && rowData.raw['Total cost']) }
+        ];
+
+        costFields.forEach(f => {
+          const val = String(f.value || "").trim();
+          if (!val || val === "-" || val === "N/A") return;
+
+          const card = document.createElement('div');
+          card.className = 'detail-card';
+          card.style.display = "flex";
+          card.style.flexDirection = "row";
+          card.style.justifyContent = "space-between";
+          card.style.alignItems = "center";
+          card.style.marginTop = "8px";
+          card.innerHTML = `
+            <span class="detail-label" style="margin-bottom:0;">${f.label}</span>
+            <div class="detail-value" style="font-weight:700; color:var(--primary-color); font-size:15px;">${f.value}</div>
+          `;
+          content.appendChild(card);
+        });
+
+        // 3. Remarks ACC
         const accRemarks = rowData.acc_remarks || rowData.ACC_Remarks || (rowData.raw && rowData.raw.ACC_Remarks);
         if (accRemarks && String(accRemarks).trim() !== '-' && String(accRemarks).trim() !== '') {
           const card = document.createElement('div');
           card.className = 'detail-card';
-          card.style.gridColumn = "1 / -1";
           card.style.marginTop = "8px";
           card.style.background = "#ffffff";
           card.style.borderLeft = "4px solid var(--primary-color)";
-          card.innerHTML = `<span class="detail-label" style="color:var(--primary-color)">ACC Remarks</span><div class="detail-value" style="font-weight:500; white-space:pre-wrap;">${accRemarks}</div>`;
+          card.innerHTML = `<span class="detail-label" style="color:var(--primary-color)">ACC Remarks</span><div class="detail-value" style="font-weight:500; white-space:pre-wrap; margin-top:4px;">${accRemarks}</div>`;
           content.appendChild(card);
         }
 
