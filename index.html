@@ -1570,16 +1570,16 @@
       // 
       // 
       // --- 1. ADD DATE FORMATTER FUNCTION ---
-      function formatDateToYYYYMMDD(dateInput) {
+      function formatDateToDisplay(dateInput) {
         if (!dateInput || dateInput === '-' || dateInput === 'N/A') return '-';
         const date = new Date(dateInput);
-        if (isNaN(date.getTime())) return dateInput; // Return original value when date is invalid
+        if (isNaN(date.getTime())) return dateInput;
 
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
 
-        return `${year}-${month}-${day}`;
+        return `${day}/${month}/${year}`;
       }
       // 
       // 
@@ -1638,7 +1638,7 @@
           const tr = document.createElement('tr');
 
           const createdDtStr = row.createdDate || row.Created || '-';
-          const displayDate = formatDateToYYYYMMDD(createdDtStr);
+          const displayDate = formatDateToDisplay(createdDtStr);
 
           // PL Overdue Logic (Matching Techpack)
           let plOverdueCol = '-';
@@ -1802,7 +1802,7 @@
           if (!val || val === "-" || val === "N/A") return;
           
           let displayVal = f.value;
-          if (f.label === 'Created' || f.label === 'Modified' || f.label === 'Uploaded Date') displayVal = formatDateToYYYYMMDD(f.value);
+          if (f.label === 'Created' || f.label === 'Modified' || f.label === 'Uploaded Date') displayVal = formatDateToDisplay(f.value);
 
           const card = document.createElement('div');
           card.className = 'detail-card';
