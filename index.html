@@ -547,6 +547,8 @@
     padding: 48px 20px;
     text-align: center;
     color: #64748b;
+  }
+  
   /* Redesigned Modal/Details (revised.html style) */
   .detail-card {
     background: #f8fafc;
@@ -599,6 +601,21 @@
     font-size: 12px;
   }
 
+  .modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(8px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 3000;
+    padding: 20px;
+  }
+
   .modal-window {
     background: white;
     border-radius: 16px;
@@ -608,8 +625,15 @@
     display: flex;
     flex-direction: column;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    animation: modalSlide 0.3s ease-out;
     overflow: hidden;
   }
+
+  @keyframes modalSlide {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
   .modal-header {
     padding: 20px 24px;
     border-bottom: 1px solid #f1f5f9;
@@ -617,6 +641,11 @@
     justify-content: space-between;
     align-items: center;
     background: white;
+  }
+  .modal-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1e293b;
   }
   .modal-body {
     padding: 1.5rem;
@@ -886,7 +915,7 @@
     </main>
 
     <!-- Modals -->
-    <div class="modal" id="details-modal" style="background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px);">
+    <div class="modal-backdrop" id="details-modal">
       <div class="modal-window">
         <div class="modal-header">
            <h3 class="modal-title">Request Analytics</h3>
@@ -1608,12 +1637,11 @@
           const cNumLabel = formatCNumberDisplay(row);
           const tr = document.createElement('tr');
 
+          const createdDtStr = row.createdDate || row.Created || '-';
           const displayDate = formatDateToYYYYMMDD(createdDtStr);
-
 
           // PL Overdue Logic (Matching Techpack)
           let plOverdueCol = '-';
-          const createdDtStr = row.createdDate || row.Created || '-';
           if (createdDtStr !== '-') {
             const created = new Date(createdDtStr);
             if (!isNaN(created)) {
