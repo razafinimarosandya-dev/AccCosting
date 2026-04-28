@@ -662,7 +662,7 @@
                 <div id="acc-detail-id" style="font-size:13px; font-weight:600;">-</div>
               </div>
               <div>
-                <div style="font-size:10px; color:#64748b; font-weight:800; text-transform:uppercase;">Title</div>
+                <div style="font-size:10px; color:#64748b; font-weight:800; text-transform:uppercase;">Customer_Ref</div>
                 <div id="acc-detail-title" style="font-size:13px; font-weight:600;">-</div>
               </div>
               <div>
@@ -678,17 +678,8 @@
                 <div id="acc-detail-sample" style="font-size:13px; font-weight:600;">-</div>
               </div>
               <div>
-                <div style="font-size:10px; color:#64748b; font-weight:800; text-transform:uppercase;">TKL Season</div>
+                <div style="font-size:10px; color:#64748b; font-weight:800; text-transform:uppercase;">Season</div>
                 <div id="acc-detail-season" style="font-size:13px; font-weight:600;">-</div>
-              </div>
-              <div>
-                <div style="font-size:10px; color:#64748b; font-weight:800; text-transform:uppercase;">Main Fabric</div>
-                <div id="acc-detail-fabric" style="font-size:13px; font-weight:600;">-</div>
-              </div>
-              <div>
-                <div style="font-size:10px; color:#64748b; font-weight:800; text-transform:uppercase;">Fabric Header
-                </div>
-                <div id="acc-detail-header" style="font-size:13px; font-weight:600;">-</div>
               </div>
               <div>
                 <div style="font-size:10px; color:#64748b; font-weight:800; text-transform:uppercase;">PL Name</div>
@@ -698,9 +689,13 @@
                 <div style="font-size:10px; color:#64748b; font-weight:800; text-transform:uppercase;">Status</div>
                 <div id="acc-detail-status" style="font-size:13px; font-weight:600;">-</div>
               </div>
-              <div style="grid-column: span 2;">
-                <div style="font-size:10px; color:#64748b; font-weight:800; text-transform:uppercase;">Remarks</div>
-                <div id="acc-detail-remarks" style="font-size:13px; font-weight:600; white-space: pre-wrap;">-</div>
+              <div id="acc-detail-created-box" style="display:none;">
+                <div style="font-size:10px; color:#64748b; font-weight:800; text-transform:uppercase;">Created</div>
+                <div id="acc-detail-created" style="font-size:13px; font-weight:600;">-</div>
+              </div>
+              <div id="acc-detail-modified-box" style="display:none;">
+                <div style="font-size:10px; color:#64748b; font-weight:800; text-transform:uppercase;">Modified</div>
+                <div id="acc-detail-modified" style="font-size:13px; font-weight:600;">-</div>
               </div>
             </div>
           </div>
@@ -1144,17 +1139,30 @@
           const el = document.getElementById(id);
           if (el) el.textContent = String(v || '-');
         };
+        const setBox = (id, v) => {
+          const box = document.getElementById(id + '-box');
+          const el = document.getElementById(id);
+          if (box && el) {
+            if (v && String(v).trim() !== '-' && String(v).trim() !== '') {
+              el.textContent = String(v);
+              box.style.display = 'block';
+            } else {
+              box.style.display = 'none';
+            }
+          }
+        };
+
         set('acc-detail-id', requestId || formatCNumberDisplay(rowData));
-        set('acc-detail-title', rowData.style || rowData.title || '-');
+        set('acc-detail-title', rowData.customer_ref || rowData.Customer_Ref || rowData.style || rowData.title || '-');
         set('acc-detail-customer', rowData.customer || '-');
         set('acc-detail-pl', rowData.assignee || 'Unassigned');
         set('acc-detail-status', getRowStatus(rowData) || '-');
-        set('acc-detail-dept', rowData.Cus_Dept || rowData.cusDept || '-');
+        set('acc-detail-dept', rowData.customer_department || rowData.Customer_Department || rowData.Cus_Dept || rowData.cusDept || '-');
         set('acc-detail-sample', rowData.Sample_Type || '-');
-        set('acc-detail-season', rowData.TKL_Season || '-');
-        set('acc-detail-fabric', rowData.Main_Fabric || '-');
-        set('acc-detail-header', rowData.Fabric_Header || '-');
-        set('acc-detail-remarks', rowData.Remarks || rowData.remarks || '-');
+        set('acc-detail-season', rowData.season || rowData.Season || '-');
+        
+        setBox('acc-detail-created', rowData.created || rowData.Created || '');
+        setBox('acc-detail-modified', rowData.modified || rowData.Modified || '');
       }
 
       /** Value sent to Apps Script for COMPLETE ACC (prefer C_Number from sheet column G) */
@@ -1636,25 +1644,25 @@
         const content = document.getElementById('details-content');
         const displayFields = [
           { label: 'Request ID', value: formatCNumberDisplay(rowData) || getSheetListId(rowData) || rowData.id || rowData.C_Number },
-          { label: 'Title', value: rowData.Title || rowData.Style || rowData.style },
+          { label: 'Customer_Ref', value: rowData.customer_ref || rowData.Customer_Ref || rowData.style || rowData.title },
           { label: 'Customer', value: rowData.Customer || rowData.customer },
-          { label: 'Cus Dept', value: rowData.Cus_Dept || rowData.cusDept || rowData['Customer Department'] },
+          { label: 'Cus Dept', value: rowData.customer_department || rowData.Customer_Department || rowData.Cus_Dept || rowData.cusDept },
           { label: 'Sample Type', value: rowData.Sample_Type || '-' },
-          { label: 'TKL Season', value: rowData.TKL_Season || rowData.tklSeason },
-          { label: 'Main Fabric', value: rowData.Main_Fabric || rowData.mainFabric },
-          { label: 'Fabric Header', value: rowData.Fabric_Header || rowData.fabricHeader },
+          { label: 'Season', value: rowData.season || rowData.Season || '-' },
           { label: 'PL Name', value: rowData.PL_Name || rowData.assignee || rowData.PM_Name || rowData.Pattern_Maker },
           { label: 'Status', value: getRowStatus(rowData) || rowData.Status || rowData.status },
           { label: 'Freight changes', value: rowData['Freight changes'] || rowData.freight_changes || (rowData.raw && rowData.raw['Freight changes']) },
           { label: 'Finishing cost', value: rowData['Finishing cost'] || rowData.finishing_cost || (rowData.raw && rowData.raw['Finishing cost']) },
           { label: 'Add ons', value: rowData['Add ons'] || rowData.add_ons || (rowData.raw && rowData.raw['Add ons']) },
           { label: 'Total cost', value: rowData['Total cost'] || rowData.total_cost || (rowData.raw && rowData.raw['Total cost']) },
-          { label: 'Created', value: rowData.Created || rowData.createdDate || rowData.Requested_Date || rowData.Cads_Uploaded_Date || rowData.Uploaded_Date },
-          { label: 'Created By', value: rowData['Created By'] || rowData.createdBy },
-          { label: 'Remarks', value: rowData.remarks || rowData.Remarks || '-' },
-          { label: 'Remark ACC', value: rowData.ACC_Remarks || (rowData.raw && (rowData.raw.ACC_Remarks || rowData.raw.acc_remarks)) || '-' },
+          { label: 'Created', value: rowData.created || rowData.Created || rowData.Requested_Date },
+          { label: 'Modified', value: rowData.modified || rowData.Modified },
+          { label: 'ACC Remarks', value: rowData.ACC_Remarks || rowData.acc_remarks || (rowData.raw && (rowData.raw.ACC_Remarks || rowData.raw.acc_remarks)) || '-' },
           { label: 'Folder Path', value: rowData.Folder_Path || rowData.folderLink || rowData.folder_path || rowData.folder_link || '-' }
-        ];
+        ].filter(f => {
+          if ((f.label === 'Created' || f.label === 'Modified') && (!f.value || String(f.value).trim() === '-' || String(f.value).trim() === '')) return false;
+          return true;
+        });
 
         content.innerHTML = displayFields.map(field => {
           let displayValue = field.value || '-';
