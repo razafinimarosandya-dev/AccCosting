@@ -1424,7 +1424,7 @@
       function setupUploadDetailControls(rowData) {
         const folderLink = document.getElementById('upload-folder-link');
         if (folderLink) {
-          const link = rowData.folderLink || rowData.folder_path || rowData.folder_link || '';
+          const link = rowData.Folder_Path || rowData.folder_path || rowData.folderLink || rowData.folder_link || '';
           if (link && String(link).startsWith('http')) {
             folderLink.href = link;
             folderLink.textContent = 'Open Folder';
@@ -2087,7 +2087,7 @@
         renderFabricDetails(rowData, fabricContainer);
 
         // 4. Folder Link
-        const folderPath = rowData.folder_path || rowData.folderLink || (rowData.raw && rowData.raw['Folder Path']);
+        const folderPath = rowData.Folder_Path || rowData.folder_path || rowData.folderLink || rowData.folder_link || (rowData.raw && (rowData.raw.Folder_Path || rowData.raw['Folder Path']));
         if (folderPath && String(folderPath).trim() !== '-' && String(folderPath).trim().startsWith('http')) {
           const card = document.createElement('div');
           card.className = 'detail-card';
